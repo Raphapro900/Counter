@@ -6,13 +6,14 @@
   <style>
     body {
       margin: 0;
-      height: 100vh;
       background: black;
       color: white;
       font-size: 100px;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
+      height: 100vh;
       overflow: hidden;
       user-select: none;
       cursor: pointer;
@@ -22,6 +23,21 @@
     .victoria {
       background-color: #00cc00;
       color: black;
+    }
+
+    #numero {
+      margin-bottom: 20px;
+    }
+
+    button {
+      font-size: 30px;
+      padding: 10px 30px;
+      border: none;
+      border-radius: 10px;
+      background: white;
+      color: black;
+      cursor: pointer;
+      font-family: sans-serif;
     }
 
     canvas {
@@ -35,6 +51,7 @@
 </head>
 <body onclick="contar()">
   <div id="numero">0</div>
+  <button onclick="reiniciar(event)">Reiniciar</button>
 
   <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" autoplay loop preload="auto"></audio>
@@ -42,7 +59,6 @@
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
 
-  <!-- Lienzo para confeti -->
   <canvas id="confetiCanvas"></canvas>
 
   <script>
@@ -53,8 +69,11 @@
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
     const body = document.body;
+    const canvas = document.getElementById("confetiCanvas");
+    const ctx = canvas.getContext("2d");
+    let confetis = [];
+    let confetiActivo = false;
 
-    // Activar música en móviles al primer toque
     document.addEventListener("touchstart", () => {
       musicaFondo.play().catch(() => {});
     }, { once: true });
@@ -77,14 +96,25 @@
       }
     }
 
-    // 🎉 Confeti
-    const canvas = document.getElementById("confetiCanvas");
-    const ctx = canvas.getContext("2d");
-    let confetis = [];
+    function reiniciar(e) {
+      e.stopPropagation(); // evita que cuente al tocar el botón
+      sonidoClick.currentTime = 0;
+      sonidoClick.play();
+      contador = 0;
+      numero.textContent = contador;
+      body.classList.remove("victoria");
+      musicaVictoria.pause();
+      musicaVictoria.currentTime = 0;
+      musicaFondo.currentTime = 0;
+      musicaFondo.play();
+      confetis = [];
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     function lanzarConfeti() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      confetis = [];
       for (let i = 0; i < 200; i++) {
         confetis.push({
           x: Math.random() * canvas.width,
@@ -96,7 +126,10 @@
           tiltAngle: 0
         });
       }
-      animarConfeti();
+      if (!confetiActivo) {
+        confetiActivo = true;
+        animarConfeti();
+      }
     }
 
     function animarConfeti() {
@@ -112,7 +145,9 @@
         c.tiltAngle += 0.1;
         c.tilt = Math.sin(c.tiltAngle) * 10;
       }
-      requestAnimationFrame(animarConfeti);
+      if (confetis.length > 0) {
+        requestAnimationFrame(animarConfeti);
+      }
     }
   </script>
 </body>
