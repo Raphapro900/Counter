@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Contador Raphástico</title>
   <style>
     body {
@@ -19,16 +19,13 @@
       cursor: pointer;
       transition: background 1s;
     }
-
     .victoria {
       background-color: #00cc00;
       color: black;
     }
-
     #numero {
       margin-bottom: 20px;
     }
-
     #reiniciar {
       display: none;
       font-size: 30px;
@@ -40,7 +37,6 @@
       cursor: pointer;
       font-family: sans-serif;
     }
-
     canvas {
       position: fixed;
       top: 0;
@@ -54,7 +50,7 @@
   <div id="numero">0</div>
   <button id="reiniciar" onclick="reiniciar(event)">Volver a jugar</button>
 
-  <!-- Audios -->
+  <!-- 🎧 Audios -->
   <audio id="musicaFondo" src="fondo.mp3" autoplay loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
@@ -70,16 +66,15 @@
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
     const reiniciarBtn = document.getElementById("reiniciar");
-    const body = document.body;
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
+    const body = document.body;
     let confetis = [];
 
-    // Forzar reproducción automática al cargar o primer toque
+    // Activar música en móviles si está bloqueada
     window.addEventListener("load", () => {
       musicaFondo.play().catch(() => {});
     });
-
     document.addEventListener("touchstart", () => {
       musicaFondo.play().catch(() => {});
     }, { once: true });
@@ -108,6 +103,7 @@
       e.stopPropagation();
       sonidoClick.currentTime = 0;
       sonidoClick.play();
+
       contador = 0;
       numero.textContent = contador;
       body.classList.remove("victoria");
