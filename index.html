@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Contador Raphástico</title>
   <style>
     body {
@@ -10,31 +10,30 @@
       color: white;
       font-size: 100px;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
       height: 100vh;
       overflow: hidden;
       user-select: none;
-      cursor: pointer;
       transition: background 1s;
     }
 
     .victoria {
-      background: #00cc00;
+      background-color: #00cc00;
       color: black;
     }
 
     #numero {
-      margin-bottom: 20px;
       display: none;
+      margin-bottom: 30px;
     }
 
     #empezar, #reiniciar {
       font-size: 30px;
-      padding: 10px 30px;
+      padding: 10px 40px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       background: white;
       color: black;
       cursor: pointer;
@@ -55,11 +54,11 @@
   </style>
 </head>
 <body>
-
   <div id="numero">0</div>
-  <button id="empezar" onclick="iniciarJuego()">Empezar</button>
+  <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" onclick="reiniciar(event)">Volver a jugar</button>
 
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
@@ -75,10 +74,10 @@
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
 
-    const sonidoClick = document.getElementById("sonidoClick");
-    const sonidoFinal = document.getElementById("sonidoFinal");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
+    const sonidoClick = document.getElementById("sonidoClick");
+    const sonidoFinal = document.getElementById("sonidoFinal");
 
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
@@ -86,9 +85,9 @@
     let confetis = [];
 
     function iniciarJuego() {
-      juegoActivo = true;
       btnEmpezar.style.display = "none";
       numero.style.display = "block";
+      juegoActivo = true;
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
       document.body.addEventListener("click", contar);
@@ -117,6 +116,7 @@
       e.stopPropagation();
       sonidoClick.currentTime = 0;
       sonidoClick.play();
+
       contador = 0;
       numero.textContent = contador;
       body.classList.remove("victoria");
