@@ -1,34 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <title>Contador con Sonido</title>
+  <meta charset="UTF-8" />
+  <title>Contador Final Épico</title>
   <style>
     body {
-      background-color: black;
+      margin: 0;
+      background: black;
       color: white;
       font-size: 100px;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
+      overflow: hidden;
       user-select: none;
       cursor: pointer;
+      transition: background 1s;
+    }
+
+    .verde {
+      background: #00cc00;
+      color: black;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 <body onclick="contar()">
   <div id="numero">0</div>
 
-  <!-- Sonidos -->
+  <!-- 🎧 Audios -->
+  <audio id="musicaFondo" src="fondo.mp3" autoplay loop preload="auto"></audio>
+  <audio id="musicaVictoria" src="victoria.mp3" preload="auto"></audio>
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
+
+  <!-- Confeti -->
+  <canvas id="confetiCanvas"></canvas>
 
   <script>
     let contador = 0;
     const numero = document.getElementById("numero");
     const sonidoClick = document.getElementById("sonidoClick");
     const sonidoFinal = document.getElementById("sonidoFinal");
+    const musicaFondo = document.getElementById("musicaFondo");
+    const musicaVictoria = document.getElementById("musicaVictoria");
+    const body = document.body;
+
+    // Forzar inicio en móviles
+    document.addEventListener("touchstart", () => {
+      musicaFondo.play().catch(() => {});
+    }, { once: true });
 
     function contar() {
       if (contador < 1000) {
@@ -37,11 +65,53 @@
 
         if (contador === 1000) {
           sonidoFinal.play();
+          musicaFondo.pause();
+          musicaVictoria.play();
+          body.classList.add("verde");
+          lanzarConfeti();
         } else {
           sonidoClick.currentTime = 0;
           sonidoClick.play();
         }
       }
+    }
+
+    // 🎉 Confeti simple
+    const canvas = document.getElementById("confetiCanvas");
+    const ctx = canvas.getContext("2d");
+    let confetis = [];
+
+    function lanzarConfeti() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      for (let i = 0; i < 200; i++) {
+        confetis.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * 10 + 10,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          tilt: Math.random() * 10 - 5,
+          tiltAngle: 0
+        });
+      }
+      animarConfeti();
+    }
+
+    function animarConfeti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let c of confetis) {
+        ctx.beginPath();
+        ctx.lineWidth = c.r;
+        ctx.strokeStyle = c.color;
+        ctx.moveTo(c.x + c.tilt, c.y);
+        ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
+        ctx.stroke();
+        c.y += 4;
+        c.tiltAngle += 0.1;
+        c.tilt = Math.sin(c.tiltAngle) * 10;
+      }
+      requestAnimationFrame(animarConfeti);
     }
   </script>
 </body>
