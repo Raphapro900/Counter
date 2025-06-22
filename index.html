@@ -2,25 +2,25 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Contador Final Épico</title>
+  <title>Contador Raphástico</title>
   <style>
     body {
       margin: 0;
+      height: 100vh;
       background: black;
       color: white;
       font-size: 100px;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
       overflow: hidden;
       user-select: none;
       cursor: pointer;
       transition: background 1s;
     }
 
-    .verde {
-      background: #00cc00;
+    .victoria {
+      background-color: #00cc00;
       color: black;
     }
 
@@ -29,19 +29,20 @@
       top: 0;
       left: 0;
       pointer-events: none;
+      z-index: 999;
     }
   </style>
 </head>
 <body onclick="contar()">
   <div id="numero">0</div>
 
-  <!-- 🎧 Audios -->
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" autoplay loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" preload="auto"></audio>
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
 
-  <!-- Confeti -->
+  <!-- Lienzo para confeti -->
   <canvas id="confetiCanvas"></canvas>
 
   <script>
@@ -53,7 +54,7 @@
     const musicaVictoria = document.getElementById("musicaVictoria");
     const body = document.body;
 
-    // Forzar inicio en móviles
+    // Activar música en móviles al primer toque
     document.addEventListener("touchstart", () => {
       musicaFondo.play().catch(() => {});
     }, { once: true });
@@ -67,7 +68,7 @@
           sonidoFinal.play();
           musicaFondo.pause();
           musicaVictoria.play();
-          body.classList.add("verde");
+          body.classList.add("victoria");
           lanzarConfeti();
         } else {
           sonidoClick.currentTime = 0;
@@ -76,7 +77,7 @@
       }
     }
 
-    // 🎉 Confeti simple
+    // 🎉 Confeti
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
     let confetis = [];
@@ -87,7 +88,7 @@
       for (let i = 0; i < 200; i++) {
         confetis.push({
           x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height - canvas.height,
+          y: Math.random() * -canvas.height,
           r: Math.random() * 6 + 4,
           d: Math.random() * 10 + 10,
           color: `hsl(${Math.random() * 360}, 100%, 50%)`,
