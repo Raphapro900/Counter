@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Contador en 10</title>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-size: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      user-select: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body onclick="contar()">
+  <div id="numero">0</div>
+  <script>
+    let contador = 0;
+    function contar() {
+      if (contador < 1000) {
+        contador += 10;
+        document.getElementById('numero').innerText = contador;
+      }
+    }
+  </script>
+</body>
+</html>
