@@ -54,9 +54,9 @@
   <div id="numero">0</div>
   <button id="reiniciar" onclick="reiniciar(event)">Volver a jugar</button>
 
-  <!-- Audios -->
+  <!-- 🎧 Audios -->
   <audio id="musicaFondo" src="fondo.mp3" autoplay loop preload="auto"></audio>
-  <audio id="musicaVictoria" src="victoria.mp3" preload="auto"></audio>
+  <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
 
@@ -69,8 +69,8 @@
     const sonidoFinal = document.getElementById("sonidoFinal");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
-    const reiniciarBtn = document.getElementById("reiniciar");
     const body = document.body;
+    const reiniciarBtn = document.getElementById("reiniciar");
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
     let confetis = [];
