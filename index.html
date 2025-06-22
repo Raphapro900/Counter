@@ -29,7 +29,8 @@
       margin-bottom: 20px;
     }
 
-    button {
+    #reiniciar {
+      display: none;
       font-size: 30px;
       padding: 10px 30px;
       border: none;
@@ -51,7 +52,7 @@
 </head>
 <body onclick="contar()">
   <div id="numero">0</div>
-  <button onclick="reiniciar(event)">Reiniciar</button>
+  <button id="reiniciar" onclick="reiniciar(event)">Volver a jugar</button>
 
   <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" autoplay loop preload="auto"></audio>
@@ -71,8 +72,8 @@
     const body = document.body;
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
+    const reiniciarBtn = document.getElementById("reiniciar");
     let confetis = [];
-    let confetiActivo = false;
 
     document.addEventListener("touchstart", () => {
       musicaFondo.play().catch(() => {});
@@ -85,10 +86,11 @@
 
         if (contador === 1000) {
           sonidoFinal.play();
-          musicaFondo.pause();
+          musicaVictoria.currentTime = 0;
           musicaVictoria.play();
           body.classList.add("victoria");
           lanzarConfeti();
+          reiniciarBtn.style.display = "block";
         } else {
           sonidoClick.currentTime = 0;
           sonidoClick.play();
@@ -97,24 +99,27 @@
     }
 
     function reiniciar(e) {
-      e.stopPropagation(); // evita que cuente al tocar el botón
+      e.stopPropagation();
       sonidoClick.currentTime = 0;
       sonidoClick.play();
       contador = 0;
       numero.textContent = contador;
       body.classList.remove("victoria");
+
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
+
       musicaFondo.currentTime = 0;
       musicaFondo.play();
+
       confetis = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      reiniciarBtn.style.display = "none";
     }
 
     function lanzarConfeti() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      confetis = [];
       for (let i = 0; i < 200; i++) {
         confetis.push({
           x: Math.random() * canvas.width,
@@ -126,10 +131,7 @@
           tiltAngle: 0
         });
       }
-      if (!confetiActivo) {
-        confetiActivo = true;
-        animarConfeti();
-      }
+      animarConfeti();
     }
 
     function animarConfeti() {
@@ -145,9 +147,7 @@
         c.tiltAngle += 0.1;
         c.tilt = Math.sin(c.tiltAngle) * 10;
       }
-      if (confetis.length > 0) {
-        requestAnimationFrame(animarConfeti);
-      }
+      requestAnimationFrame(animarConfeti);
     }
   </script>
 </body>
