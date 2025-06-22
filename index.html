@@ -69,10 +69,10 @@
     const sonidoFinal = document.getElementById("sonidoFinal");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
+    const reiniciarBtn = document.getElementById("reiniciar");
     const body = document.body;
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
-    const reiniciarBtn = document.getElementById("reiniciar");
     let confetis = [];
 
     document.addEventListener("touchstart", () => {
@@ -86,6 +86,7 @@
 
         if (contador === 1000) {
           sonidoFinal.play();
+          musicaFondo.pause();
           musicaVictoria.currentTime = 0;
           musicaVictoria.play();
           body.classList.add("victoria");
@@ -108,7 +109,6 @@
 
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
-
       musicaFondo.currentTime = 0;
       musicaFondo.play();
 
@@ -120,6 +120,7 @@
     function lanzarConfeti() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      confetis = [];
       for (let i = 0; i < 200; i++) {
         confetis.push({
           x: Math.random() * canvas.width,
