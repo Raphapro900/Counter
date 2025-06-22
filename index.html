@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Contador Raphástico</title>
   <style>
     body {
@@ -19,15 +19,18 @@
       cursor: pointer;
       transition: background 1s;
     }
+
     .victoria {
-      background-color: #00cc00;
+      background: #00cc00;
       color: black;
     }
+
     #numero {
       margin-bottom: 20px;
-    }
-    #reiniciar {
       display: none;
+    }
+
+    #empezar, #reiniciar {
       font-size: 30px;
       padding: 10px 30px;
       border: none;
@@ -37,6 +40,11 @@
       cursor: pointer;
       font-family: sans-serif;
     }
+
+    #reiniciar {
+      display: none;
+    }
+
     canvas {
       position: fixed;
       top: 0;
@@ -46,12 +54,13 @@
     }
   </style>
 </head>
-<body onclick="contar()">
+<body>
+
   <div id="numero">0</div>
+  <button id="empezar" onclick="iniciarJuego()">Empezar</button>
   <button id="reiniciar" onclick="reiniciar(event)">Volver a jugar</button>
 
-  <!-- 🎧 Audios -->
-  <audio id="musicaFondo" src="fondo.mp3" autoplay loop preload="auto"></audio>
+  <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
@@ -60,42 +69,47 @@
 
   <script>
     let contador = 0;
+    let juegoActivo = false;
+
     const numero = document.getElementById("numero");
+    const btnEmpezar = document.getElementById("empezar");
+    const btnReiniciar = document.getElementById("reiniciar");
+
     const sonidoClick = document.getElementById("sonidoClick");
     const sonidoFinal = document.getElementById("sonidoFinal");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
-    const reiniciarBtn = document.getElementById("reiniciar");
+
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
     const body = document.body;
     let confetis = [];
 
-    // Activar música en móviles si está bloqueada
-    window.addEventListener("load", () => {
+    function iniciarJuego() {
+      juegoActivo = true;
+      btnEmpezar.style.display = "none";
+      numero.style.display = "block";
+      musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
-    });
-    document.addEventListener("touchstart", () => {
-      musicaFondo.play().catch(() => {});
-    }, { once: true });
+      document.body.addEventListener("click", contar);
+    }
 
     function contar() {
-      if (contador < 1000) {
-        contador += 10;
-        numero.textContent = contador;
+      if (!juegoActivo || contador >= 1000) return;
+      contador += 10;
+      numero.textContent = contador;
 
-        if (contador === 1000) {
-          sonidoFinal.play();
-          musicaFondo.pause();
-          musicaVictoria.currentTime = 0;
-          musicaVictoria.play();
-          body.classList.add("victoria");
-          lanzarConfeti();
-          reiniciarBtn.style.display = "block";
-        } else {
-          sonidoClick.currentTime = 0;
-          sonidoClick.play();
-        }
+      if (contador === 1000) {
+        sonidoFinal.play();
+        musicaFondo.pause();
+        musicaVictoria.currentTime = 0;
+        musicaVictoria.play();
+        body.classList.add("victoria");
+        lanzarConfeti();
+        btnReiniciar.style.display = "block";
+      } else {
+        sonidoClick.currentTime = 0;
+        sonidoClick.play();
       }
     }
 
@@ -103,20 +117,18 @@
       e.stopPropagation();
       sonidoClick.currentTime = 0;
       sonidoClick.play();
-
       contador = 0;
       numero.textContent = contador;
       body.classList.remove("victoria");
 
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
-
       musicaFondo.currentTime = 0;
       musicaFondo.play();
 
       confetis = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      reiniciarBtn.style.display = "none";
+      btnReiniciar.style.display = "none";
     }
 
     function lanzarConfeti() {
