@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Contador (con Bienvenida)</title>
+  <title>Contador Raphástico</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     body {
@@ -17,46 +17,35 @@
       align-items: center;
       height: 100vh;
       overflow: hidden;
-      transition: background 0.5s;
       user-select: none;
+      transition: background 0.5s;
     }
     .oculto { display: none; }
     .blur { filter: blur(5px); transition: filter 0.3s; }
-    #bienvenido {
-      position: absolute;
-      font-size: 80px;
-      cursor: pointer;
-      animation: parpadeo 1s infinite;
-      z-index: 3;
-    }
-    .explosion {
-      animation: explotar 0.4s forwards ease-out;
-      pointer-events: none;
-    }
-    @keyframes parpadeo {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.1); }
-    }
-    @keyframes explotar {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.5); opacity: 0.7; }
-      100% { transform: scale(0); opacity: 0; }
-    }
+    .explosion { animation: explotar 0.4s forwards ease-out; pointer-events: none; }
     .victoria { background: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
     .temblor { animation: temblor 0.3s; }
     .rojo { background-color: red !important; }
-    @keyframes vibrar {
-      0%,100% { transform: translate(0,0); }
-      25% { transform: translate(3px,-3px); }
-      50% { transform: translate(-3px,3px); }
-      75% { transform: translate(3px,3px); }
+
+    #bienvenido {
+      font-size: 80px;
+      position: absolute;
+      top: 30%;
+      animation: parpadeo 1s infinite;
+      cursor: pointer;
+      z-index: 2;
     }
-    @keyframes temblor {
-      0%,100% { transform: translate(0,0); }
-      25% { transform: translate(4px,-4px); }
-      50% { transform: translate(-4px,4px); }
-      75% { transform: translate(4px,4px); }
+    #instruccion {
+      font-size: 24px;
+      position: absolute;
+      top: 45%;
+      animation: parpadeo 1.5s infinite;
+      z-index: 2;
+    }
+    #numero {
+      margin-top: 20px;
+      z-index: 1;
     }
     #mensajeVictoria {
       position: absolute;
@@ -66,10 +55,7 @@
       text-shadow: 4px 4px 0 black;
       animation: parpadeo 1s infinite;
     }
-    #numero {
-      margin-bottom: 30px;
-      z-index: 1;
-    }
+
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -88,15 +74,37 @@
       pointer-events: none;
       z-index: 0;
     }
+
+    @keyframes parpadeo {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+    @keyframes explotar {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.7; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    @keyframes vibrar {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(3px,-3px); }
+      50% { transform: translate(-3px,3px); }
+      75% { transform: translate(3px,3px); }
+    }
+    @keyframes temblor {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(4px,-4px); }
+      50% { transform: translate(-4px,4px); }
+      75% { transform: translate(4px,4px); }
+    }
   </style>
 </head>
 <body>
   <div id="bienvenido">¡Bienvenido!</div>
-  <div id="numero">0</div>
+  <div id="instruccion">Haz click a Bienvenido para empezar</div>
+  <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
 
-  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
@@ -114,34 +122,34 @@
   <script>
     let contador = 0;
     let clickActual = 0;
-    let juegoActivo = true;
+    let juegoActivo = false;
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
     const btnReiniciar = document.getElementById("reiniciar");
     const bienvenido = document.getElementById("bienvenido");
+    const instruccion = document.getElementById("instruccion");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
     const sonidoFinal = document.getElementById("sonidoFinal");
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
 
-    const sonidosClick = [
-      click1, click2, click3, click4,
-      click5, click6, click7, click8
-    ];
+    const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, click8];
 
-    window.onload = () => {
-      musicaFondo.play().catch(() => {});
-    };
+    window.onload = () => musicaFondo.play().catch(() => {});
 
     bienvenido.addEventListener("click", () => {
       bienvenido.classList.add("explosion");
+      instruccion.classList.add("explosion");
       document.body.classList.add("blur");
       lanzarConfeti();
       setTimeout(() => {
         bienvenido.classList.add("oculto");
+        instruccion.classList.add("oculto");
+        numero.classList.remove("oculto");
         document.body.classList.remove("blur");
+        juegoActivo = true;
       }, 400);
     });
 
@@ -149,6 +157,7 @@
       if (!juegoActivo || contador >= 1000) return;
       document.body.classList.add("temblor", "rojo", "blur");
       setTimeout(() => document.body.classList.remove("temblor", "rojo", "blur"), 200);
+
       contador += 10;
       numero.textContent = contador;
       sonidosClick[clickActual].currentTime = 0;
@@ -167,40 +176,16 @@
       }
     });
 
-    btnReiniciar.addEventListener("click", (e) => {
+    btnReiniciar.addEventListener("click", e => {
       e.stopPropagation();
       contador = 0;
       clickActual = 0;
-      juegoActivo = true;
+      juegoActivo = false;
       numero.textContent = "0";
+      numero.classList.add("oculto");
       mensaje.classList.add("oculto");
       btnReiniciar.classList.add("oculto");
       bienvenido.classList.remove("oculto", "explosion");
+      instruccion.classList.remove("oculto", "explosion");
       document.body.classList.remove("victoria", "ritmo", "blur");
-      musicaVictoria.pause();
-      musicaVictoria.currentTime = 0;
-      musicaFondo.currentTime = 0;
-      musicaFondo.play();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    });
-
-    function lanzarConfeti() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const confetis = [];
-      for (let i = 0; i < 200; i++) {
-        confetis.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * -canvas.height,
-          r: Math.random() * 6 + 4,
-          d: Math.random() * 10 + 10,
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-          tilt: Math.random() * 10 - 5,
-          tiltAngle: 0
-        });
-      }
-      animarConfeti(confetis);
-    }
-
-    function animarConfeti(confetis) {
-      ctx.clearRect(0, 0, canvas.width
+      musicaVictoria.pause
