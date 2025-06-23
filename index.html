@@ -12,9 +12,9 @@
       font-size: 100px;
       font-family: 'Bebas Neue', sans-serif;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
       height: 100vh;
       overflow: hidden;
       user-select: none;
@@ -75,8 +75,8 @@
 <body>
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
-  <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
-  <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
+  <button id="empezar">Empezar a jugar</button>
+  <button id="reiniciar" class="oculto">Volver a jugar</button>
 
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
@@ -108,7 +108,6 @@
     const sonidoFinal = document.getElementById("sonidoFinal");
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
-    const body = document.body;
 
     const sonidosClick = [
       document.getElementById("click1"),
@@ -121,30 +120,28 @@
       document.getElementById("click8"),
     ];
 
-    let confetis = [];
-
-    function iniciarJuego() {
+    btnEmpezar.addEventListener("click", () => {
       if (juegoActivo) return;
       juegoActivo = true;
-      btnEmpezar.onclick = null;
-      btnEmpezar.disabled = true;
-      btnEmpezar.classList.add("oculto");
       numero.classList.remove("oculto");
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
       document.body.addEventListener("click", contar);
-    }
+    });
+
+    btnReiniciar.addEventListener("click", reiniciar);
 
     function contar() {
       if (!juegoActivo || contador >= 1000) return;
-      body.classList.add("temblor", "rojo");
-      setTimeout(() => body.classList.remove("temblor", "rojo"), 200);
+
+      document.body.classList.add("temblor", "rojo");
+      setTimeout(() => document.body.classList.remove("temblor", "rojo"), 200);
+
       contador += 10;
       numero.textContent = contador;
 
-      const sonido = sonidosClick[clickActual];
-      sonido.currentTime = 0;
-      sonido.play();
+      sonidosClick[clickActual].currentTime = 0;
+      sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
 
       if (contador === 1000) {
@@ -152,7 +149,7 @@
         musicaFondo.pause();
         musicaVictoria.currentTime = 0;
         musicaVictoria.play();
-        body.classList.add("victoria", "ritmo");
+        document.body.classList.add("victoria", "ritmo");
         mensaje.classList.remove("oculto");
         btnReiniciar.classList.remove("oculto");
         lanzarConfeti();
@@ -161,29 +158,23 @@
 
     function reiniciar(e) {
       e.stopPropagation();
-      sonidosClick[clickActual].currentTime = 0;
-      sonidosClick[clickActual].play();
-      clickActual = (clickActual + 1) % sonidosClick.length;
-
       contador = 0;
+      juegoActivo = false;
       numero.textContent = contador;
-      body.classList.remove("victoria", "ritmo");
+      document.body.classList.remove("victoria", "ritmo");
       mensaje.classList.add("oculto");
       btnReiniciar.classList.add("oculto");
-
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
       musicaFondo.currentTime = 0;
       musicaFondo.play();
-
-      confetis = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     function lanzarConfeti() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      confetis = [];
+      const confetis = [];
       for (let i = 0; i < 200; i++) {
         confetis.push({
           x: Math.random() * canvas.width,
@@ -195,11 +186,20 @@
           tiltAngle: 0
         });
       }
-      animarConfeti();
+      animarConfeti(confetis);
     }
 
-    function animarConfeti() {
+    function animarConfeti(confetis) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let c of confetis) {
         ctx.beginPath();
-        ctx.lineWidth =
+        ctx.lineWidth = c.r;
+        ctx.strokeStyle = c.color;
+        ctx.moveTo(c.x + c.tilt, c.y);
+        ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
+        ctx.stroke();
+        c.y += 4;
+        c.tiltAngle += 0.1;
+        c.tilt = Math.sin(c.tiltAngle) * 10;
+      }
+      request
