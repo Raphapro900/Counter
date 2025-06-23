@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Contador Raphástico</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -33,11 +33,11 @@
     }
 
     @keyframes vibrar {
-      0% { transform: translate(0, 0); }
+      0% { transform: translate(0px, 0px); }
       25% { transform: translate(3px, -3px); }
       50% { transform: translate(-3px, 3px); }
       75% { transform: translate(3px, 3px); }
-      100% { transform: translate(0, 0); }
+      100% { transform: translate(0px, 0px); }
     }
 
     .rojo {
@@ -67,7 +67,6 @@
       color: yellow;
       text-shadow: 4px 4px 0 black;
       animation: parpadeo 1s infinite;
-      font-family: 'Bebas Neue', sans-serif;
     }
 
     @keyframes parpadeo {
@@ -87,6 +86,15 @@
       z-index: 1;
     }
 
+    #btnYoutube {
+      margin-top: 20px;
+      transition: transform 0.2s;
+    }
+
+    #btnYoutube:hover {
+      transform: scale(1.2);
+    }
+
     canvas {
       position: fixed;
       top: 0;
@@ -99,8 +107,15 @@
 <body>
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
+
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
+
+  <a id="btnYoutube" class="oculto" href="https://youtube.com/@raphapro900?si=gT87dDMS5PYo7AiM" target="_blank" aria-label="YouTube">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" width="60" height="60" fill="red">
+      <path d="M549.7 124.1c-6.3-23.8-24.9-42.4-48.7-48.7C456.4 64 288 64 288 64S119.6 64 74.9 75.4c-23.8 6.3-42.4 24.9-48.7 48.7C16 169.6 16 256 16 256s0 86.4 10.2 131.9c6.3 23.8 24.9 42.4 48.7 48.7C119.6 448 288 448 288 448s168.4 0 213.1-11.4c23.8-6.3 42.4-24.9 48.7-48.7C560 342.4 560 256 560 256s0-86.4-10.3-131.9zM232 336V176l142 80-142 80z"/>
+    </svg>
+  </a>
 
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
@@ -117,6 +132,7 @@
     const mensaje = document.getElementById("mensajeVictoria");
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
+    const btnYoutube = document.getElementById("btnYoutube");
 
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
@@ -153,8 +169,9 @@
         musicaVictoria.play();
         body.classList.add("victoria", "ritmo");
         mensaje.classList.remove("oculto");
-        lanzarConfeti();
         btnReiniciar.classList.remove("oculto");
+        btnYoutube.classList.remove("oculto");
+        lanzarConfeti();
       } else {
         sonidoClick.currentTime = 0;
         sonidoClick.play();
@@ -165,11 +182,13 @@
       e.stopPropagation();
       sonidoClick.currentTime = 0;
       sonidoClick.play();
-
       contador = 0;
       numero.textContent = contador;
+
       body.classList.remove("victoria", "ritmo");
       mensaje.classList.add("oculto");
+      btnReiniciar.classList.add("oculto");
+      btnYoutube.classList.add("oculto");
 
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
@@ -178,7 +197,6 @@
 
       confetis = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      btnReiniciar.classList.add("oculto");
     }
 
     function lanzarConfeti() {
@@ -188,32 +206,4 @@
       for (let i = 0; i < 200; i++) {
         confetis.push({
           x: Math.random() * canvas.width,
-          y: Math.random() * -canvas.height,
-          r: Math.random() * 6 + 4,
-          d: Math.random() * 10 + 10,
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-          tilt: Math.random() * 10 - 5,
-          tiltAngle: 0
-        });
-      }
-      animarConfeti();
-    }
-
-    function animarConfeti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let c of confetis) {
-        ctx.beginPath();
-        ctx.lineWidth = c.r;
-        ctx.strokeStyle = c.color;
-        ctx.moveTo(c.x + c.tilt, c.y);
-        ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
-        ctx.stroke();
-        c.y += 4;
-        c.tiltAngle += 0.1;
-        c.tilt = Math.sin(c.tiltAngle) * 10;
-      }
-      requestAnimationFrame(animarConfeti);
-    }
-  </script>
-</body>
-</html>
+          y: Math.random() *
