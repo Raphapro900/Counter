@@ -17,8 +17,8 @@
       align-items: center;
       height: 100vh;
       overflow: hidden;
-      transition: background 0.5s;
       user-select: none;
+      transition: background 0.5s;
     }
     .oculto { display: none; }
     .victoria { background-color: #00cc00 !important; color: black; }
@@ -78,12 +78,11 @@
   <button id="empezar">Empezar a jugar</button>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
 
-  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
 
-  <!-- Sonidos de clic -->
+  <!-- 8 sonidos de clic -->
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
   <audio id="click3" src="click3.mp3" preload="auto"></audio>
@@ -111,24 +110,26 @@
     const ctx = canvas.getContext("2d");
 
     const sonidosClick = [
-      click1, click2, click3, click4, click5, click6, click7, click8
+      document.getElementById("click1"),
+      document.getElementById("click2"),
+      document.getElementById("click3"),
+      document.getElementById("click4"),
+      document.getElementById("click5"),
+      document.getElementById("click6"),
+      document.getElementById("click7"),
+      document.getElementById("click8"),
     ];
 
     btnEmpezar.addEventListener("click", () => {
-      if (!juegoActivo && contador === 0) {
-        iniciarJuego();
-      }
-    });
-
-    btnReiniciar.addEventListener("click", reiniciar);
-
-    function iniciarJuego() {
+      if (juegoActivo) return;
       juegoActivo = true;
       numero.classList.remove("oculto");
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
       document.body.addEventListener("click", contar);
-    }
+    });
+
+    btnReiniciar.addEventListener("click", reiniciar);
 
     function contar() {
       if (!juegoActivo || contador >= 1000) return;
@@ -201,8 +202,4 @@
         c.tiltAngle += 0.1;
         c.tilt = Math.sin(c.tiltAngle) * 10;
       }
-      requestAnimationFrame(() => animarConfeti(confetis));
-    }
-  </script>
-</body>
-</html>
+      request
