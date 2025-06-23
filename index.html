@@ -2,41 +2,45 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Contador Raphástico</title>
+  <title>Contador Explosivo</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
       background: black;
       color: white;
-      font-size: 100px;
       font-family: 'Bebas Neue', sans-serif;
+      font-size: 100px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
       overflow: hidden;
-      transition: background 0.5s;
       user-select: none;
+      transition: background 0.5s;
     }
     .oculto { display: none; }
-    .victoria { background-color: #00cc00 !important; color: black; }
+    .victoria { background: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
-    .rojo { background-color: red !important; }
     .temblor { animation: temblor 0.3s; }
-
+    .rojo { background-color: red !important; }
     @keyframes vibrar {
-      0%, 100% { transform: translate(0, 0); }
-      25% { transform: translate(3px, -3px); }
-      50% { transform: translate(-3px, 3px); }
-      75% { transform: translate(3px, 3px); }
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(3px,-3px); }
+      50% { transform: translate(-3px,3px); }
+      75% { transform: translate(3px,3px); }
     }
     @keyframes temblor {
-      0%, 100% { transform: translate(0, 0); }
-      25% { transform: translate(4px, -4px); }
-      50% { transform: translate(-4px, 4px); }
-      75% { transform: translate(4px, 4px); }
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(4px,-4px); }
+      50% { transform: translate(-4px,4px); }
+      75% { transform: translate(4px,4px); }
+    }
+    @keyframes explotar {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.8; }
+      100% { transform: scale(0); opacity: 0; }
     }
     #mensajeVictoria {
       position: absolute;
@@ -47,18 +51,10 @@
       animation: parpadeo 1s infinite;
     }
     @keyframes parpadeo {
-      0%, 100% { opacity: 1; transform: scale(1); }
+      0%,100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.1); }
     }
-    .explosion {
-      animation: explotar 0.4s forwards ease-out;
-      pointer-events: none;
-    }
-    @keyframes explotar {
-      0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.5); opacity: 0.8; }
-      100% { transform: scale(0); opacity: 0; }
-    }
+    #numero { margin-bottom: 30px; }
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -69,6 +65,11 @@
       color: black;
       cursor: pointer;
       z-index: 1;
+      transition: transform 0.3s;
+    }
+    .explosion {
+      animation: explotar 0.4s forwards ease-out;
+      pointer-events: none;
     }
     canvas {
       position: fixed;
@@ -85,10 +86,10 @@
   <button id="empezar">Empezar a jugar</button>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
 
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
-
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
   <audio id="click3" src="click3.mp3" preload="auto"></audio>
@@ -105,24 +106,27 @@
     let juegoActivo = false;
     let clickActual = 0;
 
-    const numero = document.getElementById("numero");
-    const mensaje = document.getElementById("mensajeVictoria");
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
+    const numero = document.getElementById("numero");
+    const mensaje = document.getElementById("mensajeVictoria");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
     const sonidoFinal = document.getElementById("sonidoFinal");
-    const canvas = document.getElementById("confetiCanvas");
-    const ctx = canvas.getContext("2d");
 
     const sonidosClick = [
       click1, click2, click3, click4, click5, click6, click7, click8
     ];
 
+    const canvas = document.getElementById("confetiCanvas");
+    const ctx = canvas.getContext("2d");
+
     btnEmpezar.addEventListener("click", () => {
-      if (!juegoActivo && contador < 10) {
-        iniciarJuego();
-      }
+      if (juegoActivo) return;
+      btnEmpezar.classList.add("explosion");
+      lanzarConfeti();
+      setTimeout(() => btnEmpezar.classList.add("oculto"), 400);
+      iniciarJuego();
     });
 
     btnReiniciar.addEventListener("click", reiniciar);
@@ -137,22 +141,13 @@
 
     function contar() {
       if (!juegoActivo || contador >= 1000) return;
-
       document.body.classList.add("temblor", "rojo");
       setTimeout(() => document.body.classList.remove("temblor", "rojo"), 200);
-
       contador += 10;
       numero.textContent = contador;
-
       sonidosClick[clickActual].currentTime = 0;
       sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
-
-      if (contador === 10) {
-        btnEmpezar.classList.add("explosion");
-        setTimeout(() => btnEmpezar.classList.add("oculto"), 400);
-        lanzarConfeti();
-      }
 
       if (contador === 1000) {
         sonidoFinal.play();
@@ -173,9 +168,8 @@
       clickActual = 0;
       numero.textContent = contador;
       numero.classList.add("oculto");
-      btnEmpezar.classList.remove("oculto", "explosion");
-      btnEmpezar.disabled = false;
       mensaje.classList.add("oculto");
+      btnEmpezar.classList.remove("oculto", "explosion");
       btnReiniciar.classList.add("oculto");
       document.body.classList.remove("victoria", "ritmo");
       musicaVictoria.pause();
@@ -197,21 +191,3 @@
           d: Math.random() * 10 + 10,
           color: `hsl(${Math.random() * 360}, 100%, 50%)`,
           tilt: Math.random() * 10 - 5,
-          tiltAngle: 0
-        });
-      }
-      animarConfeti(confetis);
-    }
-
-    function animarConfeti(confetis) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let c of confetis) {
-        ctx.beginPath();
-        ctx.lineWidth = c.r;
-        ctx.strokeStyle = c.color;
-        ctx.moveTo(c.x + c.tilt, c.y);
-        ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
-        ctx.stroke();
-        c.y += 4;
-        c.tiltAngle += 0.1;
-        c.tilt = Math.sin
