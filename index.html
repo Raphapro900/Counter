@@ -1,65 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Contador Raphástico</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
       background: black;
       color: white;
-      font-size: 100px;
       font-family: 'Bebas Neue', sans-serif;
+      font-size: 100px;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
       height: 100vh;
       overflow: hidden;
       user-select: none;
       transition: background 0.5s;
     }
-
     .oculto { display: none; }
+    .blur { filter: blur(5px); transition: filter 0.3s; }
+    .victoria { background-color: #00cc00 !important; color: black; }
+    .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
+    .temblor { animation: temblor 0.3s; }
+    .rojo { background-color: red !important; }
 
-    .victoria {
-      background-color: #00cc00 !important;
-      color: black;
+    #inicio {
+      position: absolute;
+      top: 40%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
     }
-
-    .ritmo {
-      animation: vibrar 0.3s infinite ease-in-out;
-    }
-
-    @keyframes vibrar {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(3px, -3px); }
-      50% { transform: translate(-3px, 3px); }
-      75% { transform: translate(3px, 3px); }
-      100% { transform: translate(0, 0); }
-    }
-
-    .rojo {
-      background-color: red !important;
-    }
-
-    .temblor {
-      animation: temblor 0.3s;
-    }
-
-    @keyframes temblor {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(4px, -4px); }
-      50% { transform: translate(-4px, 4px); }
-      75% { transform: translate(4px, 4px); }
-      100% { transform: translate(0, 0); }
-    }
-
-    #numero {
-      margin-bottom: 30px;
-    }
-
     #mensajeVictoria {
       position: absolute;
       top: 20%;
@@ -67,14 +42,11 @@
       color: yellow;
       text-shadow: 4px 4px 0 black;
       animation: parpadeo 1s infinite;
-      font-family: 'Bebas Neue', sans-serif;
     }
-
-    @keyframes parpadeo {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.1); }
+    #numero {
+      margin-top: 20px;
+      z-index: 1;
     }
-
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -84,9 +56,8 @@
       background: white;
       color: black;
       cursor: pointer;
-      z-index: 1;
+      margin-top: 20px;
     }
-
     canvas {
       position: fixed;
       top: 0;
@@ -94,97 +65,123 @@
       pointer-events: none;
       z-index: 0;
     }
+
+    @keyframes vibrar {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(3px,-3px); }
+      50% { transform: translate(-3px,3px); }
+      75% { transform: translate(3px,3px); }
+    }
+    @keyframes temblor {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(4px,-4px); }
+      50% { transform: translate(-4px,4px); }
+      75% { transform: translate(4px,4px); }
+    }
+    @keyframes parpadeo {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
   </style>
 </head>
 <body>
+  <div id="inicio">
+    <div style="font-size:60px">¡Bienvenido!</div>
+    <button id="btnIniciar">Empezar a jugar</button>
+  </div>
+
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
-  <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
-  <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
+  <button id="reiniciar" class="oculto">Volver a jugar</button>
 
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
-  <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
-
+  <audio id="click1" src="click1.mp3" preload="auto"></audio>
+  <audio id="click2" src="click2.mp3" preload="auto"></audio>
+  <audio id="click3" src="click3.mp3" preload="auto"></audio>
+  <audio id="click4" src="click4.mp3" preload="auto"></audio>
+  <audio id="click5" src="click5.mp3" preload="auto"></audio>
+  <audio id="click6" src="click6.mp3" preload="auto"></audio>
+  <audio id="click7" src="click7.mp3" preload="auto"></audio>
+  <audio id="click8" src="click8.mp3" preload="auto"></audio>
   <canvas id="confetiCanvas"></canvas>
 
   <script>
     let contador = 0;
+    let clickActual = 0;
     let juegoActivo = false;
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
-    const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
-
+    const btnIniciar = document.getElementById("btnIniciar");
+    const inicio = document.getElementById("inicio");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
-    const sonidoClick = document.getElementById("sonidoClick");
     const sonidoFinal = document.getElementById("sonidoFinal");
-
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
-    const body = document.body;
-    let confetis = [];
 
-    function iniciarJuego() {
-      btnEmpezar.classList.add("oculto");
+    const sonidosClick = [
+      click1, click2, click3, click4,
+      click5, click6, click7, click8
+    ];
+
+    btnIniciar.addEventListener("click", () => {
+      inicio.classList.add("oculto");
       numero.classList.remove("oculto");
       juegoActivo = true;
-      musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
-      document.body.addEventListener("click", contar);
-    }
+    });
 
-    function contar() {
+    document.body.addEventListener("click", () => {
       if (!juegoActivo || contador >= 1000) return;
 
-      body.classList.add("temblor", "rojo");
-      setTimeout(() => body.classList.remove("temblor", "rojo"), 200);
+      document.body.classList.add("temblor", "rojo", "blur");
+      setTimeout(() => document.body.classList.remove("temblor", "rojo", "blur"), 200);
 
       contador += 10;
       numero.textContent = contador;
+      sonidosClick[clickActual].currentTime = 0;
+      sonidosClick[clickActual].play();
+      clickActual = (clickActual + 1) % sonidosClick.length;
 
       if (contador === 1000) {
         sonidoFinal.play();
         musicaFondo.pause();
         musicaVictoria.currentTime = 0;
         musicaVictoria.play();
-        body.classList.add("victoria", "ritmo");
+        document.body.classList.add("victoria", "ritmo", "blur");
         mensaje.classList.remove("oculto");
-        lanzarConfeti();
         btnReiniciar.classList.remove("oculto");
-      } else {
-        sonidoClick.currentTime = 0;
-        sonidoClick.play();
+        lanzarConfeti();
       }
-    }
+    });
 
-    function reiniciar(e) {
+    btnReiniciar.addEventListener("click", e => {
       e.stopPropagation();
-      sonidoClick.currentTime = 0;
-      sonidoClick.play();
-
       contador = 0;
-      numero.textContent = contador;
-      body.classList.remove("victoria", "ritmo");
+      clickActual = 0;
+      juegoActivo = false;
+      numero.textContent = "0";
+      numero.classList.add("oculto");
       mensaje.classList.add("oculto");
-
+      btnReiniciar.classList.add("oculto");
+      inicio.classList.remove("oculto");
+      document.body.classList.remove("victoria", "ritmo", "blur");
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
       musicaFondo.currentTime = 0;
       musicaFondo.play();
-
-      confetis = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      btnReiniciar.classList.add("oculto");
-    }
+    });
 
     function lanzarConfeti() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      confetis = [];
+      const confetis = [];
       for (let i = 0; i < 200; i++) {
         confetis.push({
           x: Math.random() * canvas.width,
@@ -196,24 +193,14 @@
           tiltAngle: 0
         });
       }
-      animarConfeti();
+      animar(confetis);
     }
 
-    function animarConfeti() {
+    function animar(confetis) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let c of confetis) {
+      confetis.forEach(c => {
         ctx.beginPath();
-        ctx.lineWidth = c.r;
-        ctx.strokeStyle = c.color;
-        ctx.moveTo(c.x + c.tilt, c.y);
-        ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
-        ctx.stroke();
-        c.y += 4;
-        c.tiltAngle += 0.1;
-        c.tilt = Math.sin(c.tiltAngle) * 10;
-      }
-      requestAnimationFrame(animarConfeti);
-    }
-  </script>
-</body>
-</html>
+        ctx.fillStyle = c.color;
+        ctx.ellipse(c.x, c.y, c.r, c.r / 2, c.tilt, 0, 2 * Math.PI);
+        ctx.fill();
+        c.y += c.d * 0.3;
