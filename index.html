@@ -82,8 +82,6 @@
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
-
-  <!-- Sonidos de clic -->
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
   <audio id="click3" src="click3.mp3" preload="auto"></audio>
@@ -109,7 +107,6 @@
     const sonidoFinal = document.getElementById("sonidoFinal");
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
-
     const sonidosClick = [
       click1, click2, click3, click4, click5, click6, click7, click8
     ];
@@ -124,6 +121,7 @@
 
     function iniciarJuego() {
       juegoActivo = true;
+      btnEmpezar.classList.add("oculto");
       numero.classList.remove("oculto");
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
@@ -160,9 +158,11 @@
       contador = 0;
       juegoActivo = false;
       numero.textContent = contador;
-      document.body.classList.remove("victoria", "ritmo");
+      numero.classList.add("oculto");
+      btnEmpezar.classList.remove("oculto");
       mensaje.classList.add("oculto");
       btnReiniciar.classList.add("oculto");
+      document.body.classList.remove("victoria", "ritmo");
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
       musicaFondo.currentTime = 0;
@@ -194,15 +194,4 @@
         ctx.beginPath();
         ctx.lineWidth = c.r;
         ctx.strokeStyle = c.color;
-        ctx.moveTo(c.x + c.tilt, c.y);
-        ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
-        ctx.stroke();
-        c.y += 4;
-        c.tiltAngle += 0.1;
-        c.tilt = Math.sin(c.tiltAngle) * 10;
-      }
-      requestAnimationFrame(() => animarConfeti(confetis));
-    }
-  </script>
-</body>
-</html>
+        ctx.moveTo(c.x + c.tilt, c.y
