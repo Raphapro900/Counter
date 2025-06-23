@@ -2,8 +2,8 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Contador Raphástico</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <title>Contador Bienvenido</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -105,6 +105,7 @@
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
 
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
@@ -157,13 +158,11 @@
       if (!juegoActivo || contador >= 1000) return;
       document.body.classList.add("temblor", "rojo", "blur");
       setTimeout(() => document.body.classList.remove("temblor", "rojo", "blur"), 200);
-
       contador += 10;
       numero.textContent = contador;
       sonidosClick[clickActual].currentTime = 0;
       sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
-
       if (contador === 1000) {
         sonidoFinal.play();
         musicaFondo.pause();
@@ -188,4 +187,26 @@
       bienvenido.classList.remove("oculto", "explosion");
       instruccion.classList.remove("oculto", "explosion");
       document.body.classList.remove("victoria", "ritmo", "blur");
-      musicaVictoria.pause
+      musicaVictoria.pause();
+      musicaVictoria.currentTime = 0;
+      musicaFondo.currentTime = 0;
+      musicaFondo.play();
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    function lanzarConfeti() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const confetis = [];
+      for (let i = 0; i < 200; i++) {
+        confetis.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          r: Math.random() * 6 + 4,
+          d: Math.random() * 10 + 10,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          tilt: Math.random() * 10 - 5,
+          tiltAngle: 0
+        });
+      }
+      animarConfeti(confet
