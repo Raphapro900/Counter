@@ -25,6 +25,7 @@
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
     .temblor { animation: temblor 0.3s; }
     .rojo { background-color: red !important; }
+
     @keyframes vibrar {
       0%,100% { transform: translate(0,0); }
       25% { transform: translate(3px,-3px); }
@@ -54,7 +55,6 @@
       0%,100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.1); }
     }
-    #numero { margin-bottom: 30px; }
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -65,7 +65,6 @@
       color: black;
       cursor: pointer;
       z-index: 1;
-      transition: transform 0.3s;
     }
     .explosion {
       animation: explotar 0.4s forwards ease-out;
@@ -115,7 +114,8 @@
     const sonidoFinal = document.getElementById("sonidoFinal");
 
     const sonidosClick = [
-      click1, click2, click3, click4, click5, click6, click7, click8
+      click1, click2, click3, click4,
+      click5, click6, click7, click8
     ];
 
     const canvas = document.getElementById("confetiCanvas");
@@ -123,6 +123,7 @@
 
     btnEmpezar.addEventListener("click", () => {
       if (juegoActivo) return;
+      juegoActivo = true;
       btnEmpezar.classList.add("explosion");
       lanzarConfeti();
       setTimeout(() => btnEmpezar.classList.add("oculto"), 400);
@@ -132,7 +133,6 @@
     btnReiniciar.addEventListener("click", reiniciar);
 
     function iniciarJuego() {
-      juegoActivo = true;
       numero.classList.remove("oculto");
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
@@ -143,8 +143,10 @@
       if (!juegoActivo || contador >= 1000) return;
       document.body.classList.add("temblor", "rojo");
       setTimeout(() => document.body.classList.remove("temblor", "rojo"), 200);
+
       contador += 10;
       numero.textContent = contador;
+
       sonidosClick[clickActual].currentTime = 0;
       sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
@@ -164,8 +166,8 @@
     function reiniciar(e) {
       e.stopPropagation();
       contador = 0;
-      juegoActivo = false;
       clickActual = 0;
+      juegoActivo = false;
       numero.textContent = contador;
       numero.classList.add("oculto");
       mensaje.classList.add("oculto");
@@ -191,3 +193,12 @@
           d: Math.random() * 10 + 10,
           color: `hsl(${Math.random() * 360}, 100%, 50%)`,
           tilt: Math.random() * 10 - 5,
+          tiltAngle: 0
+        });
+      }
+      animarConfeti(confetis);
+    }
+
+    function animarConfeti(confetis) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let c of
