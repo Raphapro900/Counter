@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Contador Raphástico</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -20,18 +20,9 @@
       user-select: none;
       transition: background 0.5s;
     }
-
     .oculto { display: none; }
-
-    .victoria {
-      background-color: #00cc00 !important;
-      color: black;
-    }
-
-    .ritmo {
-      animation: vibrar 0.3s infinite ease-in-out;
-    }
-
+    .victoria { background-color: #00cc00 !important; color: black; }
+    .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
     @keyframes vibrar {
       0% { transform: translate(0, 0); }
       25% { transform: translate(3px, -3px); }
@@ -39,15 +30,8 @@
       75% { transform: translate(3px, 3px); }
       100% { transform: translate(0, 0); }
     }
-
-    .rojo {
-      background-color: red !important;
-    }
-
-    .temblor {
-      animation: temblor 0.3s;
-    }
-
+    .rojo { background-color: red !important; }
+    .temblor { animation: temblor 0.3s; }
     @keyframes temblor {
       0% { transform: translate(0, 0); }
       25% { transform: translate(4px, -4px); }
@@ -55,11 +39,7 @@
       75% { transform: translate(4px, 4px); }
       100% { transform: translate(0, 0); }
     }
-
-    #numero {
-      margin-bottom: 30px;
-    }
-
+    #numero { margin-bottom: 30px; }
     #mensajeVictoria {
       position: absolute;
       top: 20%;
@@ -67,14 +47,11 @@
       color: yellow;
       text-shadow: 4px 4px 0 black;
       animation: parpadeo 1s infinite;
-      font-family: 'Bebas Neue', sans-serif;
     }
-
     @keyframes parpadeo {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.1); }
     }
-
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -86,7 +63,6 @@
       cursor: pointer;
       z-index: 1;
     }
-
     canvas {
       position: fixed;
       top: 0;
@@ -104,34 +80,56 @@
 
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
-  <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
+
+  <!-- 8 sonidos de clic -->
+  <audio id="click1" src="click1.mp3" preload="auto"></audio>
+  <audio id="click2" src="click2.mp3" preload="auto"></audio>
+  <audio id="click3" src="click3.mp3" preload="auto"></audio>
+  <audio id="click4" src="click4.mp3" preload="auto"></audio>
+  <audio id="click5" src="click5.mp3" preload="auto"></audio>
+  <audio id="click6" src="click6.mp3" preload="auto"></audio>
+  <audio id="click7" src="click7.mp3" preload="auto"></audio>
+  <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
   <canvas id="confetiCanvas"></canvas>
 
   <script>
     let contador = 0;
     let juegoActivo = false;
+    let clickActual = 0;
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
-
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
-    const sonidoClick = document.getElementById("sonidoClick");
     const sonidoFinal = document.getElementById("sonidoFinal");
-
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
     const body = document.body;
+
+    const sonidosClick = [
+      document.getElementById("click1"),
+      document.getElementById("click2"),
+      document.getElementById("click3"),
+      document.getElementById("click4"),
+      document.getElementById("click5"),
+      document.getElementById("click6"),
+      document.getElementById("click7"),
+      document.getElementById("click8"),
+    ];
+
     let confetis = [];
 
     function iniciarJuego() {
+      if (juegoActivo) return;
+      juegoActivo = true;
+      btnEmpezar.onclick = null;
+      btnEmpezar.disabled = true;
       btnEmpezar.classList.add("oculto");
       numero.classList.remove("oculto");
-      juegoActivo = true;
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
       document.body.addEventListener("click", contar);
@@ -139,12 +137,15 @@
 
     function contar() {
       if (!juegoActivo || contador >= 1000) return;
-
       body.classList.add("temblor", "rojo");
       setTimeout(() => body.classList.remove("temblor", "rojo"), 200);
-
       contador += 10;
       numero.textContent = contador;
+
+      const sonido = sonidosClick[clickActual];
+      sonido.currentTime = 0;
+      sonido.play();
+      clickActual = (clickActual + 1) % sonidosClick.length;
 
       if (contador === 1000) {
         sonidoFinal.play();
@@ -153,23 +154,22 @@
         musicaVictoria.play();
         body.classList.add("victoria", "ritmo");
         mensaje.classList.remove("oculto");
-        lanzarConfeti();
         btnReiniciar.classList.remove("oculto");
-      } else {
-        sonidoClick.currentTime = 0;
-        sonidoClick.play();
+        lanzarConfeti();
       }
     }
 
     function reiniciar(e) {
       e.stopPropagation();
-      sonidoClick.currentTime = 0;
-      sonidoClick.play();
+      sonidosClick[clickActual].currentTime = 0;
+      sonidosClick[clickActual].play();
+      clickActual = (clickActual + 1) % sonidosClick.length;
 
       contador = 0;
       numero.textContent = contador;
       body.classList.remove("victoria", "ritmo");
       mensaje.classList.add("oculto");
+      btnReiniciar.classList.add("oculto");
 
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
@@ -178,7 +178,6 @@
 
       confetis = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      btnReiniciar.classList.add("oculto");
     }
 
     function lanzarConfeti() {
@@ -203,17 +202,4 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let c of confetis) {
         ctx.beginPath();
-        ctx.lineWidth = c.r;
-        ctx.strokeStyle = c.color;
-        ctx.moveTo(c.x + c.tilt, c.y);
-        ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
-        ctx.stroke();
-        c.y += 4;
-        c.tiltAngle += 0.1;
-        c.tilt = Math.sin(c.tiltAngle) * 10;
-      }
-      requestAnimationFrame(animarConfeti);
-    }
-  </script>
-</body>
-</html>
+        ctx.lineWidth =
