@@ -12,13 +12,17 @@
       font-size: 100px;
       font-family: 'Komika Axis', sans-serif;
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
       height: 100vh;
       overflow: hidden;
       user-select: none;
       transition: background 0.5s;
+    }
+
+    .oculto {
+      display: none;
     }
 
     .victoria {
@@ -58,14 +62,6 @@
       z-index: 1;
     }
 
-    #reiniciar {
-      display: none;
-    }
-
-    #empezar {
-      position: absolute;
-    }
-
     canvas {
       position: fixed;
       top: 0;
@@ -76,10 +72,11 @@
   </style>
 </head>
 <body>
-  <div id="numero">0</div>
+  <div id="numero" class="oculto">0</div>
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
-  <button id="reiniciar" onclick="reiniciar(event)">Volver a jugar</button>
+  <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
 
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
@@ -94,7 +91,6 @@
     const numero = document.getElementById("numero");
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
-    const body = document.body;
 
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
@@ -103,10 +99,12 @@
 
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
+    const body = document.body;
     let confetis = [];
 
     function iniciarJuego() {
-      btnEmpezar.style.display = "none";
+      btnEmpezar.classList.add("oculto");
+      numero.classList.remove("oculto");
       juegoActivo = true;
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
@@ -129,7 +127,7 @@
         musicaVictoria.play();
         body.classList.add("victoria");
         lanzarConfeti();
-        btnReiniciar.style.display = "block";
+        btnReiniciar.classList.remove("oculto");
       } else {
         sonidoClick.currentTime = 0;
         sonidoClick.play();
@@ -147,13 +145,12 @@
 
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
-
       musicaFondo.currentTime = 0;
       musicaFondo.play();
 
       confetis = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      btnReiniciar.style.display = "none";
+      btnReiniciar.classList.add("oculto");
     }
 
     function lanzarConfeti() {
