@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Contador Bienvenido</title>
+  <title>Contador Raphástico</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -136,7 +136,10 @@
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
 
-    const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, click8];
+    const sonidosClick = [
+      click1, click2, click3, click4,
+      click5, click6, click7, click8
+    ];
 
     window.onload = () => musicaFondo.play().catch(() => {});
 
@@ -158,11 +161,13 @@
       if (!juegoActivo || contador >= 1000) return;
       document.body.classList.add("temblor", "rojo", "blur");
       setTimeout(() => document.body.classList.remove("temblor", "rojo", "blur"), 200);
+
       contador += 10;
       numero.textContent = contador;
       sonidosClick[clickActual].currentTime = 0;
       sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
+
       if (contador === 1000) {
         sonidoFinal.play();
         musicaFondo.pause();
@@ -193,15 +198,3 @@
       musicaFondo.play();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     });
-
-    function lanzarConfeti() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const confetis = [];
-      for (let i = 0; i < 200; i++) {
-        confetis.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * -canvas.height,
-          r: Math.random() * 6 + 4,
-          d: Math.random() * 10 + 10,
-          color: `hsl
