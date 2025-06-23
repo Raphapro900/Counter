@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Contador Raphástico</title>
+  <title>Contador Interactivo</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -21,10 +21,11 @@
     }
     .oculto { display: none; }
     .blur { filter: blur(5px); transition: filter 0.3s; }
-    .victoria { background-color: #00cc00 !important; color: black; }
+    .victoria { background: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
     .temblor { animation: temblor 0.3s; }
     .rojo { background-color: red !important; }
+
     #inicio {
       position: absolute;
       top: 40%;
@@ -63,6 +64,7 @@
       pointer-events: none;
       z-index: 0;
     }
+
     @keyframes vibrar {
       0%,100% { transform: translate(0,0); }
       25% { transform: translate(3px,-3px); }
@@ -119,10 +121,7 @@
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
 
-    const sonidosClick = [
-      click1, click2, click3, click4,
-      click5, click6, click7, click8
-    ];
+    const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, click8];
 
     btnIniciar.addEventListener("click", () => {
       inicio.classList.add("oculto");
@@ -140,7 +139,6 @@
       sonidosClick[clickActual].currentTime = 0;
       sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
-
       if (contador === 1000) {
         sonidoFinal.play();
         musicaFondo.pause();
@@ -187,3 +185,12 @@
         });
       }
       animar(confetis);
+    }
+
+    function animar(confetis) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confetis.forEach(c => {
+        ctx.beginPath();
+        ctx.fillStyle = c.color;
+        ctx.ellipse(c.x, c.y, c.r, c.r / 2, c.tilt, 0, 2 * Math.PI);
+        ctx
