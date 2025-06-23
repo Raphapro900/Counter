@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Contador Raphástico</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -24,24 +24,10 @@
     .blur { filter: blur(5px); transition: filter 0.3s; }
     .temblor { animation: temblor 0.3s; }
     .rojo { background-color: red !important; }
-    .victoria { background: #00cc00 !important; color: black; }
+    .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
-    @keyframes temblor {
-      0%,100% { transform: translate(0,0); }
-      25% { transform: translate(4px,-4px); }
-      50% { transform: translate(-4px,4px); }
-      75% { transform: translate(4px,4px); }
-    }
-    @keyframes vibrar {
-      0%,100% { transform: translate(0,0); }
-      25% { transform: translate(3px,-3px); }
-      50% { transform: translate(-3px,3px); }
-      75% { transform: translate(3px,3px); }
-    }
-    @keyframes parpadeo {
-      0%,100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.1); }
-    }
+
+    #numero { margin-bottom: 30px; }
     #mensajeVictoria {
       position: absolute;
       top: 20%;
@@ -50,6 +36,51 @@
       text-shadow: 4px 4px 0 black;
       animation: parpadeo 1s infinite;
     }
+    #emblemasVitrina {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    #notificacionEmblema {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      font-size: 22px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      color: gold;
+      border: 2px solid gold;
+      border-radius: 10px;
+      display: none;
+      animation: fadeout 3s ease-out forwards;
+    }
+
+    @keyframes parpadeo {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+    @keyframes vibrar {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(3px,-3px); }
+      50% { transform: translate(-3px,3px); }
+      75% { transform: translate(3px,3px); }
+    }
+    @keyframes temblor {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(4px,-4px); }
+      50% { transform: translate(-4px,4px); }
+      75% { transform: translate(4px,4px); }
+    }
+    @keyframes fadeout {
+      0% { opacity: 1; }
+      75% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -59,8 +90,9 @@
       background: white;
       color: black;
       cursor: pointer;
-      margin-top: 20px;
+      z-index: 1;
     }
+
     canvas {
       position: fixed;
       top: 0;
@@ -76,10 +108,15 @@
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
 
+  <div id="notificacionEmblema"></div>
+  <div id="emblemasVitrina"></div>
+
   <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
+  <audio id="sonidoEmblema" src="emblema.mp3" preload="auto"></audio>
+
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
   <audio id="click3" src="click3.mp3" preload="auto"></audio>
@@ -95,28 +132,31 @@
     let contador = 0;
     let juegoActivo = false;
     let clickActual = 0;
+    let tiempoClickRapido = [];
+    let tiempoClickUltra = [];
+    let victorias = 0;
+    let tiempoPaciencia = null;
+    let esperaPaciencia = null;
+    let emblemasObtenidos = {};
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
-    const musicaFondo = document.getElementById("musicaFondo");
-    const musicaVictoria = document.getElementById("musicaVictoria");
-    const sonidoFinal = document.getElementById("sonidoFinal");
-
-    const sonidosClick = [
-      click1, click2, click3, click4,
-      click5, click6, click7, click8
-    ];
+    const body = document.body;
 
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
-    const body = document.body;
+
+    const sonidosClick = [
+      click1, click2, click3, click4, click5, click6, click7, click8
+    ];
 
     function iniciarJuego() {
       btnEmpezar.classList.add("oculto");
       numero.classList.remove("oculto");
       juegoActivo = true;
+      musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
       document.body.addEventListener("click", contar);
     }
@@ -124,17 +164,49 @@
     function contar() {
       if (!juegoActivo || contador >= 1000) return;
 
+      // Efectos
       body.classList.add("temblor", "rojo", "blur");
       setTimeout(() => body.classList.remove("temblor", "rojo", "blur"), 200);
 
+      // Contador
       contador += 10;
       numero.textContent = contador;
 
+      // Sonido
       const sonido = sonidosClick[clickActual];
       sonido.currentTime = 0;
       sonido.play();
       clickActual = (clickActual + 1) % sonidosClick.length;
 
+      // Guardar tiempo para clics rápidos
+      const ahora = Date.now();
+      tiempoClickRapido.push(ahora);
+      tiempoClickUltra.push(ahora);
+      tiempoClickRapido = tiempoClickRapido.filter(t => ahora - t < 10000); // 10s
+      tiempoClickUltra = tiempoClickUltra.filter(t => ahora - t < 2000); // 2s
+
+      // Emblemas por velocidad
+      if (tiempoClickRapido.length >= 20) desbloquearEmblema("⚡ Velocidad Loca");
+      if (tiempoClickUltra.length >= 10) desbloquearEmblema("🔥 Dedo Rápido");
+
+      // Emblema por número exacto
+      if (contador === 100) desbloquearEmblema("🥇 Medalla de Bronce");
+      if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
+
+      // Paciencia en 300
+      if (contador === 300) {
+        if (!esperaPaciencia) {
+          tiempoPaciencia = Date.now();
+          esperaPaciencia = setTimeout(() => {
+            if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
+          }, 180000); // 3 minutos
+        }
+      } else {
+        clearTimeout(esperaPaciencia);
+        esperaPaciencia = null;
+      }
+
+      // Llegar a 1000
       if (contador === 1000) {
         sonidoFinal.play();
         musicaFondo.pause();
@@ -144,6 +216,9 @@
         mensaje.classList.remove("oculto");
         btnReiniciar.classList.remove("oculto");
         lanzarConfeti();
+
+        victorias++;
+        if (victorias === 3) desbloquearEmblema("💎 Diamante Triple");
       }
     }
 
@@ -159,6 +234,12 @@
       musicaFondo.play();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       btnReiniciar.classList.add("oculto");
+      tiempoClickRapido = [];
+      tiempoClickUltra = [];
+      clearTimeout(esperaPaciencia);
+      esperaPaciencia = null;
+      juegoActivo = true;
+      numero.classList.remove("oculto");
     }
 
     function lanzarConfeti() {
@@ -176,10 +257,33 @@
           tiltAngle: 0
         });
       }
-      animar(confetis);
+      animarConfeti(confetis);
+    }
+    function desbloquearEmblema(nombre) {
+      if (emblemasObtenidos[nombre]) return; // ya obtenido
+      emblemasObtenidos[nombre] = true;
+
+      // Mostrar en vitrina
+      const vitrina = document.getElementById("emblemasVitrina");
+      const insignia = document.createElement("div");
+      insignia.textContent = nombre;
+      vitrina.appendChild(insignia);
+
+      // Notificación visual
+      const noti = document.getElementById("notificacionEmblema");
+      noti.textContent = `🏆 Emblema desbloqueado: ${nombre}`;
+      noti.style.display = "block";
+      noti.style.animation = "none";
+      void noti.offsetWidth; // reiniciar animación
+      noti.style.animation = "fadeout 3s ease-out forwards";
+
+      // Sonido
+      const sonido = document.getElementById("sonidoEmblema");
+      sonido.currentTime = 0;
+      sonido.play();
     }
 
-    function animar(confetis) {
+    function animarConfeti(confetis) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let c of confetis) {
         ctx.beginPath();
@@ -192,8 +296,11 @@
         c.tiltAngle += 0.1;
         c.tilt = Math.sin(c.tiltAngle) * 10;
       }
-      requestAnimationFrame(() => animar(confetis));
+      requestAnimationFrame(() => animarConfeti(confetis));
     }
   </script>
 </body>
-  </html>
+</html>
+</script>
+</body>
+</html>
