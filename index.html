@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Counter (Pantalla de Carga)</title>
+  <title>Contador con Pantalla de Carga</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -46,7 +46,6 @@
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
     .rojo { background-color: red !important; }
     .temblor { animation: temblor 0.3s; }
-
     @keyframes vibrar {
       0%,100% { transform: translate(0,0); }
       25% { transform: translate(3px,-3px); }
@@ -133,7 +132,7 @@
       click5, click6, click7, click8
     ];
 
-    // Comenzar automáticamente después de 5 segundos
+    // Autoiniciar después de 5 segundos
     setTimeout(() => {
       pantallaCarga.classList.add("explosion");
       lanzarConfeti();
@@ -155,13 +154,10 @@
 
     function contar() {
       if (!juegoActivo || contador >= 1000) return;
-
       document.body.classList.add("temblor", "rojo");
       setTimeout(() => document.body.classList.remove("temblor", "rojo"), 200);
-
       contador += 10;
       numero.textContent = contador;
-
       sonidosClick[clickActual].currentTime = 0;
       sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
@@ -205,3 +201,13 @@
           x: Math.random() * canvas.width,
           y: Math.random() * -canvas.height,
           r: Math.random() * 6 + 4,
+          d: Math.random() * 10 + 10,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          tilt: Math.random() * 10 - 5,
+          tiltAngle: 0
+        });
+      }
+      animarConfeti(confetis);
+    }
+
+    function
