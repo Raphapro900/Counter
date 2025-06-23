@@ -23,23 +23,21 @@
     .oculto { display: none; }
     .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
+    .rojo { background-color: red !important; }
+    .temblor { animation: temblor 0.3s; }
+
     @keyframes vibrar {
-      0% { transform: translate(0, 0); }
+      0%, 100% { transform: translate(0, 0); }
       25% { transform: translate(3px, -3px); }
       50% { transform: translate(-3px, 3px); }
       75% { transform: translate(3px, 3px); }
-      100% { transform: translate(0, 0); }
     }
-    .rojo { background-color: red !important; }
-    .temblor { animation: temblor 0.3s; }
     @keyframes temblor {
-      0% { transform: translate(0, 0); }
+      0%, 100% { transform: translate(0, 0); }
       25% { transform: translate(4px, -4px); }
       50% { transform: translate(-4px, 4px); }
       75% { transform: translate(4px, 4px); }
-      100% { transform: translate(0, 0); }
     }
-    #numero { margin-bottom: 30px; }
     #mensajeVictoria {
       position: absolute;
       top: 20%;
@@ -51,6 +49,15 @@
     @keyframes parpadeo {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.1); }
+    }
+    .explosion {
+      animation: explotar 0.4s forwards ease-out;
+      pointer-events: none;
+    }
+    @keyframes explotar {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.8; }
+      100% { transform: scale(0); opacity: 0; }
     }
     button {
       font-family: 'Bebas Neue', sans-serif;
@@ -81,6 +88,7 @@
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
+
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
   <audio id="click3" src="click3.mp3" preload="auto"></audio>
@@ -106,6 +114,7 @@
     const sonidoFinal = document.getElementById("sonidoFinal");
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
+
     const sonidosClick = [
       click1, click2, click3, click4, click5, click6, click7, click8
     ];
@@ -139,9 +148,10 @@
       sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
 
-      if (contador >= 10) {
-        btnEmpezar.classList.add("oculto");
-        btnEmpezar.disabled = true;
+      if (contador === 10) {
+        btnEmpezar.classList.add("explosion");
+        setTimeout(() => btnEmpezar.classList.add("oculto"), 400);
+        lanzarConfeti();
       }
 
       if (contador === 1000) {
@@ -163,7 +173,7 @@
       clickActual = 0;
       numero.textContent = contador;
       numero.classList.add("oculto");
-      btnEmpezar.classList.remove("oculto");
+      btnEmpezar.classList.remove("oculto", "explosion");
       btnEmpezar.disabled = false;
       mensaje.classList.add("oculto");
       btnReiniciar.classList.add("oculto");
@@ -198,3 +208,10 @@
       for (let c of confetis) {
         ctx.beginPath();
         ctx.lineWidth = c.r;
+        ctx.strokeStyle = c.color;
+        ctx.moveTo(c.x + c.tilt, c.y);
+        ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
+        ctx.stroke();
+        c.y += 4;
+        c.tiltAngle += 0.1;
+        c.tilt = Math.sin
