@@ -30,6 +30,18 @@
       color: black;
     }
 
+    .ritmo {
+      animation: vibrar 0.3s infinite ease-in-out;
+    }
+
+    @keyframes vibrar {
+      0% { transform: translate(0px, 0px); }
+      25% { transform: translate(3px, -3px); }
+      50% { transform: translate(-3px, 3px); }
+      75% { transform: translate(3px, 3px); }
+      100% { transform: translate(0px, 0px); }
+    }
+
     .rojo {
       background-color: red !important;
     }
@@ -76,7 +88,6 @@
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
 
-  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
@@ -125,7 +136,7 @@
         musicaFondo.pause();
         musicaVictoria.currentTime = 0;
         musicaVictoria.play();
-        body.classList.add("victoria");
+        body.classList.add("victoria", "ritmo");
         lanzarConfeti();
         btnReiniciar.classList.remove("oculto");
       } else {
@@ -141,7 +152,7 @@
 
       contador = 0;
       numero.textContent = contador;
-      body.classList.remove("victoria");
+      body.classList.remove("victoria", "ritmo");
 
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
