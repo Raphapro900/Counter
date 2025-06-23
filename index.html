@@ -78,7 +78,6 @@
   <button id="empezar">Empezar a jugar</button>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
 
-  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
@@ -112,7 +111,7 @@
     ];
 
     btnEmpezar.addEventListener("click", () => {
-      if (!juegoActivo && contador === 0) {
+      if (!juegoActivo && contador < 10) {
         iniciarJuego();
       }
     });
@@ -121,7 +120,6 @@
 
     function iniciarJuego() {
       juegoActivo = true;
-      btnEmpezar.classList.add("oculto");
       numero.classList.remove("oculto");
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
@@ -141,6 +139,11 @@
       sonidosClick[clickActual].play();
       clickActual = (clickActual + 1) % sonidosClick.length;
 
+      if (contador >= 10) {
+        btnEmpezar.classList.add("oculto");
+        btnEmpezar.disabled = true;
+      }
+
       if (contador === 1000) {
         sonidoFinal.play();
         musicaFondo.pause();
@@ -157,9 +160,11 @@
       e.stopPropagation();
       contador = 0;
       juegoActivo = false;
+      clickActual = 0;
       numero.textContent = contador;
       numero.classList.add("oculto");
       btnEmpezar.classList.remove("oculto");
+      btnEmpezar.disabled = false;
       mensaje.classList.add("oculto");
       btnReiniciar.classList.add("oculto");
       document.body.classList.remove("victoria", "ritmo");
@@ -193,5 +198,3 @@
       for (let c of confetis) {
         ctx.beginPath();
         ctx.lineWidth = c.r;
-        ctx.strokeStyle = c.color;
-        ctx.moveTo(c.x + c.tilt, c.y
