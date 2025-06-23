@@ -9,57 +9,39 @@
       margin: 0;
       background: black;
       color: white;
-      font-size: 100px;
       font-family: 'Bebas Neue', sans-serif;
+      font-size: 100px;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      flex-direction: column;
       height: 100vh;
       overflow: hidden;
       user-select: none;
       transition: background 0.5s;
     }
-
     .oculto { display: none; }
-
-    .victoria {
-      background-color: #00cc00 !important;
-      color: black;
-    }
-
-    .ritmo {
-      animation: vibrar 0.3s infinite ease-in-out;
-    }
-
-    @keyframes vibrar {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(3px, -3px); }
-      50% { transform: translate(-3px, 3px); }
-      75% { transform: translate(3px, 3px); }
-      100% { transform: translate(0, 0); }
-    }
-
-    .rojo {
-      background-color: red !important;
-    }
-
-    .temblor {
-      animation: temblor 0.3s;
-    }
-
+    .blur { filter: blur(5px); transition: filter 0.3s; }
+    .temblor { animation: temblor 0.3s; }
+    .rojo { background-color: red !important; }
+    .victoria { background: #00cc00 !important; color: black; }
+    .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
     @keyframes temblor {
-      0% { transform: translate(0, 0); }
-      25% { transform: translate(4px, -4px); }
-      50% { transform: translate(-4px, 4px); }
-      75% { transform: translate(4px, 4px); }
-      100% { transform: translate(0, 0); }
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(4px,-4px); }
+      50% { transform: translate(-4px,4px); }
+      75% { transform: translate(4px,4px); }
     }
-
-    #numero {
-      margin-bottom: 30px;
+    @keyframes vibrar {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(3px,-3px); }
+      50% { transform: translate(-3px,3px); }
+      75% { transform: translate(3px,3px); }
     }
-
+    @keyframes parpadeo {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
     #mensajeVictoria {
       position: absolute;
       top: 20%;
@@ -67,14 +49,7 @@
       color: yellow;
       text-shadow: 4px 4px 0 black;
       animation: parpadeo 1s infinite;
-      font-family: 'Bebas Neue', sans-serif;
     }
-
-    @keyframes parpadeo {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.1); }
-    }
-
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -84,9 +59,8 @@
       background: white;
       color: black;
       cursor: pointer;
-      z-index: 1;
+      margin-top: 20px;
     }
-
     canvas {
       position: fixed;
       top: 0;
@@ -102,37 +76,47 @@
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
 
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
-  <audio id="sonidoClick" src="click.mp3" preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
+  <audio id="click1" src="click1.mp3" preload="auto"></audio>
+  <audio id="click2" src="click2.mp3" preload="auto"></audio>
+  <audio id="click3" src="click3.mp3" preload="auto"></audio>
+  <audio id="click4" src="click4.mp3" preload="auto"></audio>
+  <audio id="click5" src="click5.mp3" preload="auto"></audio>
+  <audio id="click6" src="click6.mp3" preload="auto"></audio>
+  <audio id="click7" src="click7.mp3" preload="auto"></audio>
+  <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
   <canvas id="confetiCanvas"></canvas>
 
   <script>
     let contador = 0;
     let juegoActivo = false;
+    let clickActual = 0;
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
-
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
-    const sonidoClick = document.getElementById("sonidoClick");
     const sonidoFinal = document.getElementById("sonidoFinal");
+
+    const sonidosClick = [
+      click1, click2, click3, click4,
+      click5, click6, click7, click8
+    ];
 
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
     const body = document.body;
-    let confetis = [];
 
     function iniciarJuego() {
       btnEmpezar.classList.add("oculto");
       numero.classList.remove("oculto");
       juegoActivo = true;
-      musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
       document.body.addEventListener("click", contar);
     }
@@ -140,11 +124,16 @@
     function contar() {
       if (!juegoActivo || contador >= 1000) return;
 
-      body.classList.add("temblor", "rojo");
-      setTimeout(() => body.classList.remove("temblor", "rojo"), 200);
+      body.classList.add("temblor", "rojo", "blur");
+      setTimeout(() => body.classList.remove("temblor", "rojo", "blur"), 200);
 
       contador += 10;
       numero.textContent = contador;
+
+      const sonido = sonidosClick[clickActual];
+      sonido.currentTime = 0;
+      sonido.play();
+      clickActual = (clickActual + 1) % sonidosClick.length;
 
       if (contador === 1000) {
         sonidoFinal.play();
@@ -153,30 +142,21 @@
         musicaVictoria.play();
         body.classList.add("victoria", "ritmo");
         mensaje.classList.remove("oculto");
-        lanzarConfeti();
         btnReiniciar.classList.remove("oculto");
-      } else {
-        sonidoClick.currentTime = 0;
-        sonidoClick.play();
+        lanzarConfeti();
       }
     }
 
     function reiniciar(e) {
       e.stopPropagation();
-      sonidoClick.currentTime = 0;
-      sonidoClick.play();
-
       contador = 0;
       numero.textContent = contador;
       body.classList.remove("victoria", "ritmo");
       mensaje.classList.add("oculto");
-
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
       musicaFondo.currentTime = 0;
       musicaFondo.play();
-
-      confetis = [];
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       btnReiniciar.classList.add("oculto");
     }
@@ -184,7 +164,7 @@
     function lanzarConfeti() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-      confetis = [];
+      const confetis = [];
       for (let i = 0; i < 200; i++) {
         confetis.push({
           x: Math.random() * canvas.width,
@@ -196,10 +176,10 @@
           tiltAngle: 0
         });
       }
-      animarConfeti();
+      animar(confetis);
     }
 
-    function animarConfeti() {
+    function animar(confetis) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let c of confetis) {
         ctx.beginPath();
@@ -212,8 +192,8 @@
         c.tiltAngle += 0.1;
         c.tilt = Math.sin(c.tiltAngle) * 10;
       }
-      requestAnimationFrame(animarConfeti);
+      requestAnimationFrame(() => animar(confetis));
     }
   </script>
 </body>
-</html>
+  </html>
