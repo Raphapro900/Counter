@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Contador Cargado</title>
+  <title>Contador Bienvenido</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -17,19 +17,14 @@
       height: 100vh;
       overflow: hidden;
       user-select: none;
+      transition: background 0.5s;
     }
     .oculto { display: none; }
-    .pantalla-carga {
+    #bienvenido {
       position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 60px;
-      animation: vibrar 1s infinite;
-      z-index: 10;
+      font-size: 80px;
+      animation: parpadeo 1s infinite;
+      z-index: 2;
     }
     .explosion {
       animation: explotar 0.4s forwards ease-out;
@@ -39,7 +34,11 @@
       50% { transform: scale(1.5); opacity: 0.8; }
       100% { transform: scale(0); opacity: 0; }
     }
-    .victoria { background: #00cc00 !important; color: black; }
+    @keyframes parpadeo {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.1); }
+    }
+    .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
     .rojo { background-color: red !important; }
     .temblor { animation: temblor 0.3s; }
@@ -63,10 +62,6 @@
       text-shadow: 4px 4px 0 black;
       animation: parpadeo 1s infinite;
     }
-    @keyframes parpadeo {
-      0%,100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.1); }
-    }
     #numero { margin-bottom: 30px; }
     button {
       font-family: 'Bebas Neue', sans-serif;
@@ -89,11 +84,12 @@
   </style>
 </head>
 <body>
-  <div id="pantallaCarga" class="pantalla-carga">CARGANDO...</div>
+  <div id="bienvenido">¡Bienvenido!</div>
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
 
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
@@ -116,7 +112,7 @@
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
     const btnReiniciar = document.getElementById("reiniciar");
-    const pantallaCarga = document.getElementById("pantallaCarga");
+    const bienvenido = document.getElementById("bienvenido");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
     const sonidoFinal = document.getElementById("sonidoFinal");
@@ -128,15 +124,15 @@
       click5, click6, click7, click8
     ];
 
-    // ⏳ Carga automática en 1 segundo
+    // Animación de bienvenida
     setTimeout(() => {
-      pantallaCarga.classList.add("explosion");
+      bienvenido.classList.add("explosion");
       lanzarConfeti();
       setTimeout(() => {
-        pantallaCarga.classList.add("oculto");
+        bienvenido.classList.add("oculto");
         iniciarJuego();
       }, 400);
-    }, 1000);
+    }, 3000);
 
     btnReiniciar.addEventListener("click", reiniciar);
 
@@ -178,7 +174,7 @@
       numero.textContent = contador;
       numero.classList.add("oculto");
       mensaje.classList.add("oculto");
-      pantallaCarga.classList.remove("oculto", "explosion");
+      bienvenido.classList.remove("oculto", "explosion");
       btnReiniciar.classList.add("oculto");
       document.body.classList.remove("victoria", "ritmo");
       musicaVictoria.pause();
@@ -186,6 +182,14 @@
       musicaFondo.currentTime = 0;
       musicaFondo.play();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      setTimeout(() => {
+        bienvenido.classList.add("explosion");
+        lanzarConfeti();
+        setTimeout(() => {
+          bienvenido.classList.add("oculto");
+          iniciarJuego();
+        }, 400);
+      }, 3000);
     }
 
     function lanzarConfeti() {
@@ -199,11 +203,4 @@
           r: Math.random() * 6 + 4,
           d: Math.random() * 10 + 10,
           color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-          tilt: Math.random() * 10 - 5,
-          tiltAngle: 0
-        });
-      }
-      animarConfeti(confetis);
-    }
-
-    function anim
+          tilt: Math.random() * 10
