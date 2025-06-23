@@ -14,6 +14,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
       height: 100vh;
       overflow: hidden;
       user-select: none;
@@ -21,22 +22,28 @@
     }
     .oculto { display: none; }
     #bienvenido {
-      position: absolute;
       font-size: 80px;
       animation: parpadeo 1s infinite;
+      cursor: pointer;
       z-index: 2;
+    }
+    #instruccion {
+      font-size: 24px;
+      margin-top: 20px;
+      animation: parpadeo 1.5s infinite;
     }
     .explosion {
       animation: explotar 0.4s forwards ease-out;
+      pointer-events: none;
     }
     @keyframes explotar {
       0% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.5); opacity: 0.8; }
+      50% { transform: scale(1.4); opacity: 0.7; }
       100% { transform: scale(0); opacity: 0; }
     }
     @keyframes parpadeo {
       0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(1.1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
     }
     .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
@@ -85,6 +92,7 @@
 </head>
 <body>
   <div id="bienvenido">¡Bienvenido!</div>
+  <div id="instruccion">Haz click a Bienvenido para empezar</div>
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
@@ -113,6 +121,7 @@
     const mensaje = document.getElementById("mensajeVictoria");
     const btnReiniciar = document.getElementById("reiniciar");
     const bienvenido = document.getElementById("bienvenido");
+    const instruccion = document.getElementById("instruccion");
     const musicaFondo = document.getElementById("musicaFondo");
     const musicaVictoria = document.getElementById("musicaVictoria");
     const sonidoFinal = document.getElementById("sonidoFinal");
@@ -124,15 +133,16 @@
       click5, click6, click7, click8
     ];
 
-    // Animación de bienvenida
-    setTimeout(() => {
+    bienvenido.addEventListener("click", () => {
       bienvenido.classList.add("explosion");
+      instruccion.classList.add("explosion");
       lanzarConfeti();
       setTimeout(() => {
         bienvenido.classList.add("oculto");
+        instruccion.classList.add("oculto");
         iniciarJuego();
       }, 400);
-    }, 3000);
+    });
 
     btnReiniciar.addEventListener("click", reiniciar);
 
@@ -175,6 +185,7 @@
       numero.classList.add("oculto");
       mensaje.classList.add("oculto");
       bienvenido.classList.remove("oculto", "explosion");
+      instruccion.classList.remove("oculto", "explosion");
       btnReiniciar.classList.add("oculto");
       document.body.classList.remove("victoria", "ritmo");
       musicaVictoria.pause();
@@ -182,14 +193,6 @@
       musicaFondo.currentTime = 0;
       musicaFondo.play();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      setTimeout(() => {
-        bienvenido.classList.add("explosion");
-        lanzarConfeti();
-        setTimeout(() => {
-          bienvenido.classList.add("oculto");
-          iniciarJuego();
-        }, 400);
-      }, 3000);
     }
 
     function lanzarConfeti() {
@@ -202,5 +205,4 @@
           y: Math.random() * -canvas.height,
           r: Math.random() * 6 + 4,
           d: Math.random() * 10 + 10,
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-          tilt: Math.random() * 10
+          color: `hsl(${Math.random()
