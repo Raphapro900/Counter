@@ -21,9 +21,7 @@
       transition: background 0.5s;
     }
 
-    .oculto {
-      display: none;
-    }
+    .oculto { display: none; }
 
     .victoria {
       background-color: #00cc00 !important;
@@ -35,11 +33,11 @@
     }
 
     @keyframes vibrar {
-      0% { transform: translate(0px, 0px); }
+      0% { transform: translate(0, 0); }
       25% { transform: translate(3px, -3px); }
       50% { transform: translate(-3px, 3px); }
       75% { transform: translate(3px, 3px); }
-      100% { transform: translate(0px, 0px); }
+      100% { transform: translate(0, 0); }
     }
 
     .rojo {
@@ -60,6 +58,21 @@
 
     #numero {
       margin-bottom: 30px;
+    }
+
+    #mensajeVictoria {
+      position: absolute;
+      top: 20%;
+      font-size: 80px;
+      color: yellow;
+      text-shadow: 4px 4px 0 black;
+      animation: parpadeo 1s infinite;
+      font-family: 'Bebas Neue', sans-serif;
+    }
+
+    @keyframes parpadeo {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
     }
 
     button {
@@ -85,6 +98,7 @@
 </head>
 <body>
   <div id="numero" class="oculto">0</div>
+  <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
 
@@ -100,6 +114,7 @@
     let juegoActivo = false;
 
     const numero = document.getElementById("numero");
+    const mensaje = document.getElementById("mensajeVictoria");
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
 
@@ -137,6 +152,7 @@
         musicaVictoria.currentTime = 0;
         musicaVictoria.play();
         body.classList.add("victoria", "ritmo");
+        mensaje.classList.remove("oculto");
         lanzarConfeti();
         btnReiniciar.classList.remove("oculto");
       } else {
@@ -153,6 +169,7 @@
       contador = 0;
       numero.textContent = contador;
       body.classList.remove("victoria", "ritmo");
+      mensaje.classList.add("oculto");
 
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
