@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Contador con Pantalla de Carga</title>
+  <title>Contador Cargado</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -17,7 +17,6 @@
       height: 100vh;
       overflow: hidden;
       user-select: none;
-      transition: background 0.5s;
     }
     .oculto { display: none; }
     .pantalla-carga {
@@ -25,7 +24,6 @@
       top: 0; left: 0;
       width: 100%; height: 100%;
       background: black;
-      color: white;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -35,14 +33,13 @@
     }
     .explosion {
       animation: explotar 0.4s forwards ease-out;
-      pointer-events: none;
     }
     @keyframes explotar {
       0% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.5); opacity: 0.8; }
       100% { transform: scale(0); opacity: 0; }
     }
-    .victoria { background-color: #00cc00 !important; color: black; }
+    .victoria { background: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
     .rojo { background-color: red !important; }
     .temblor { animation: temblor 0.3s; }
@@ -97,7 +94,6 @@
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
 
-  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
@@ -132,7 +128,7 @@
       click5, click6, click7, click8
     ];
 
-    // Autoiniciar después de 5 segundos
+    // ⏳ Carga automática en 1 segundo
     setTimeout(() => {
       pantallaCarga.classList.add("explosion");
       lanzarConfeti();
@@ -140,7 +136,7 @@
         pantallaCarga.classList.add("oculto");
         iniciarJuego();
       }, 400);
-    }, 5000);
+    }, 1000);
 
     btnReiniciar.addEventListener("click", reiniciar);
 
@@ -210,4 +206,4 @@
       animarConfeti(confetis);
     }
 
-    function
+    function anim
