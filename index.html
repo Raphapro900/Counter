@@ -1,4 +1,3 @@
-<!-- BLOQUE 1/6 -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -6,34 +5,80 @@
   <title>Contador Raphástico</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
-    /* … contenido de estilos completo … */
-    /* No lo repito aquí por espacio, pero es tal cual tu Bloque 1 aprobado */
+    body {
+      background-color: black;
+      color: white;
+      font-family: 'Bebas Neue', cursive;
+      text-align: center;
+      margin: 0;
+      padding: 2em;
+      overflow-x: hidden;
+    }
+    #numero {
+      font-size: 5em;
+      margin: 1em 0;
+    }
+    button {
+      font-size: 1.5em;
+      margin: 0.5em;
+      padding: 0.5em 1em;
+      cursor: pointer;
+    }
+    .oculto {
+      display: none;
+    }
+    #mensajeVictoria {
+      font-size: 3em;
+      color: gold;
+      margin-top: 1em;
+    }
+    #panelEmblemas {
+      display: none;
+      border: 2px solid white;
+      padding: 1em;
+      margin-top: 1em;
+    }
+    #notificacionEmblema {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      background-color: #222;
+      padding: 1em;
+      border-radius: 8px;
+      display: none;
+    }
+    .emblema-rojo {
+      color: red;
+      font-weight: bold;
+    }
+    #emblemasVitrina {
+      margin-top: 1em;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+    .flash-rojo {
+      animation: flashRojo 0.3s ease-in-out;
+    }
+    .flash-amarillo {
+      animation: flashAmarillo 0.3s ease-in-out;
+    }
+    @keyframes flashRojo {
+      from { background-color: darkred; }
+      to { background-color: black; }
+    }
+    @keyframes flashAmarillo {
+      from { background-color: gold; }
+      to { background-color: black; }
+    }
+    @keyframes fadeout {
+      to { opacity: 0; }
+    }
   </style>
 </head>
-
-<!-- BLOQUE 2/6 -->
-<body>
-  <!-- Elementos visuales y de audio -->
-  <!-- … tal como lo enviaste en el Bloque 2 … -->
-
-  <script>
-
-<!-- BLOQUE 3/6 -->
-    // Variables + función contar() con lógica original 660 → 666
-    // … contenido completo del Bloque 3 sin tocar nada …
-
-<!-- BLOQUE 4/6 -->
-    // Funciones de desbloqueo, evento666, video, panel
-    // … todo como lo enviaste y aprobaste …
-
-<!-- BLOQUE 5/6 -->
-    // Reinicio limpio y función lanzarConfeti()
-    // … sin modificaciones …
-
-<!-- BLOQUE 6/6 -->
-  </script>
-</body>
-</html>
 <body>
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
@@ -83,12 +128,11 @@
     let tiempoPaciencia = null;
     let esperaPaciencia = null;
     let emblemasObtenidos = {};
-    const totalEmblemas = 8; // ahora hay 8 emblemas incluyendo el demoníaco
-    let temporizadorMetaSuprema = null;
-
     let antesDelClick = 0;
     let evento666Activado = false;
     let musicaInterrumpida = false;
+    let temporizadorMetaSuprema = null;
+    const totalEmblemas = 8; // ahora son 8, incluyendo el demoníaco
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
@@ -126,14 +170,7 @@
       if (!juegoActivo || contador >= 1000) return;
 
       antesDelClick = contador;
-
-      // Salto especial: si estás en 660, pasás a 666 directamente
-      if (contador === 660) {
-        contador += 6;
-      } else {
-        contador += 10;
-      }
-
+      contador += (contador === 660 ? 6 : 10);
       numero.textContent = contador;
 
       document.body.classList.add("temblor", "rojo", "blur");
@@ -163,7 +200,6 @@
         esperaPaciencia = null;
       }
 
-      // Evento especial demoníaco
       if (antesDelClick === 660 && contador === 666 && !evento666Activado) {
         evento666Activado = true;
         musicaInterrumpida = true;
@@ -172,7 +208,6 @@
         activarEvento666();
       }
 
-      // Restaurar fondo/música si pasa de 666
       if (evento666Activado && contador > 666) {
         if (musicaInterrumpida) {
           document.body.style.backgroundColor = "black";
@@ -193,7 +228,7 @@
         victorias++;
         if (victorias === 3) desbloquearEmblema("💎 Diamante Triple");
       }
-        }
+    }
     function activarEvento666() {
       document.body.style.backgroundColor = "darkred";
       musicaFondo.pause();
@@ -240,11 +275,9 @@
       const vitrina = document.getElementById("emblemasVitrina");
       const insignia = document.createElement("div");
       insignia.textContent = nombre;
-
       if (nombre === "👹 No Confíes En 666") {
         insignia.classList.add("emblema-rojo");
       }
-
       vitrina.appendChild(insignia);
 
       noti.textContent = `🏆 Emblema desbloqueado: ${nombre}`;
@@ -271,8 +304,8 @@
         }, 3000);
       }
 
-      actualizarPanelEmblemas();
       lanzarConfeti();
+      actualizarPanelEmblemas();
     }
 
     function desbloquearMetaSuprema() {
