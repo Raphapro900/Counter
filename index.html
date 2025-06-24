@@ -20,6 +20,7 @@
       user-select: none;
       transition: background 0.5s;
     }
+
     .oculto { display: none; }
     .blur { filter: blur(5px); transition: filter 0.3s; }
     .temblor { animation: temblor 0.3s; }
@@ -30,6 +31,7 @@
     .flash-rojo { animation: flashRojo 0.3s; }
 
     #numero { margin-bottom: 30px; }
+
     #mensajeVictoria {
       position: absolute;
       top: 20%;
@@ -39,6 +41,7 @@
       animation: parpadeo 1s infinite;
       z-index: 10;
     }
+
     #emblemasVitrina {
       position: fixed;
       bottom: 10px;
@@ -49,6 +52,7 @@
       flex-wrap: wrap;
       z-index: 5;
     }
+
     #notificacionEmblema {
       position: fixed;
       bottom: 10px;
@@ -63,11 +67,13 @@
       animation: fadeout 3s ease-out forwards;
       z-index: 10;
     }
+
     .emblema-rojo {
       color: red;
       font-weight: bold;
-      text-shadow: 0 0 5px red;
+      text-shadow: 0 0 6px red;
     }
+
     #botonVerEmblemas {
       position: fixed;
       top: 10px;
@@ -81,6 +87,7 @@
       cursor: pointer;
       z-index: 10;
     }
+
     #panelEmblemas {
       position: fixed;
       top: 60px;
@@ -101,27 +108,32 @@
       0%,100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.1); }
     }
+
     @keyframes vibrar {
       0%,100% { transform: translate(0,0); }
       25% { transform: translate(3px,-3px); }
       50% { transform: translate(-3px,3px); }
       75% { transform: translate(3px,3px); }
     }
+
     @keyframes temblor {
       0%,100% { transform: translate(0,0); }
       25% { transform: translate(4px,-4px); }
       50% { transform: translate(-4px,4px); }
       75% { transform: translate(4px,4px); }
     }
+
     @keyframes fadeout {
       0% { opacity: 1; }
       75% { opacity: 1; }
       100% { opacity: 0; display: none; }
     }
+
     @keyframes flashAmarillo {
       0% { background-color: yellow; }
       100% { background-color: black; }
     }
+
     @keyframes flashRojo {
       0% { background-color: red; }
       100% { background-color: black; }
@@ -183,7 +195,7 @@
   <!-- Canvas para confeti -->
   <canvas id="confetiCanvas"></canvas>
 
-  <!-- Video oculto para emblema 666 -->
+  <!-- Video oculto para evento 666 -->
   <video id="video666" class="oculto" width="0" height="0">
     <source src="video666.mp4" type="video/mp4" />
   </video>
@@ -199,11 +211,10 @@
     let emblemasObtenidos = {};
     const totalEmblemas = 7;
     let temporizadorMetaSuprema = null;
-    let emblemaFinalDesbloqueado = false;
 
     let paso600 = false;
     let paso660 = false;
-    let evento666Disparado = false;
+    let evento666Activado = false;
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
@@ -215,10 +226,7 @@
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
 
-    const sonidosClick = [
-      click1, click2, click3, click4,
-      click5, click6, click7, click8
-    ];
+    const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, click8];
 
     const listaEmblemas = [
       "🥇 Medalla de Bronce",
@@ -243,7 +251,7 @@
     function contar() {
       if (!juegoActivo || contador >= 1000) return;
 
-      const valorAnterior = contador;
+      const antes = contador;
       contador += 10;
       numero.textContent = contador;
 
@@ -257,13 +265,16 @@
       sonido.play();
       clickActual = (clickActual + 1) % sonidosClick.length;
 
-      // Emblemas normales
+      const ahora = Date.now();
+      tiempoClickRapido.push(ahora);
+      tiempoClickRapido = tiempoClickRapido.filter(t => ahora - t < 10000);
+      if (tiempoClickRapido.length >= 20) desbloquearEmblema("⚡ Velocidad Loca");
+
       if (contador === 100) desbloquearEmblema("🥇 Medalla de Bronce");
       if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
       if (contador === 666) desbloquearEmblema("📌 Clic Preciso");
 
       if (contador === 300 && !esperaPaciencia) {
-        tiempoPaciencia = Date.now();
         esperaPaciencia = setTimeout(() => {
           if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
         }, 180000);
@@ -272,15 +283,13 @@
         esperaPaciencia = null;
       }
 
-      // Evento 666
       if (contador === 600) paso600 = true;
       if (paso600 && contador === 660) paso660 = true;
-      if (paso600 && paso660 && contador === 666 && !evento666Disparado) {
-        evento666Disparado = true;
+      if (paso600 && paso660 && contador === 666 && !evento666Activado) {
+        evento666Activado = true;
         activarEvento666();
       }
 
-      // Victoria
       if (contador === 1000) {
         sonidoFinal.play();
         musicaFondo.pause();
@@ -314,7 +323,7 @@
       sonido.currentTime = 0;
       sonido.play();
 
-      const cantidad = Object.keys(emblemasObtenidos).filter(k => k !== "🔴 No Confíes En 666").length;
+      const cantidad = Object.keys(emblemasObtenidos).filter(k => k !== "👹 No Confíes En 666").length;
       if (
         cantidad === totalEmblemas - 1 &&
         !emblemasObtenidos["🏁 Meta Suprema"] &&
@@ -388,7 +397,7 @@
       }, 300);
 
       video.onended = () => {
-        desbloquearEmblemaRojo("🔴 No Confíes En 666");
+        desbloquearEmblemaRojo("👹 No Confíes En 666");
         video.pause();
         video.currentTime = 0;
         video.style.display = "none";
@@ -405,7 +414,7 @@
       insignia.classList.add("emblema-rojo");
       vitrina.appendChild(insignia);
 
-      noti.textContent = `🔴 Emblema desbloqueado: ${nombre}`;
+      noti.textContent = `👹 Emblema desbloqueado: ${nombre}`;
       noti.style.display = "block";
       noti.style.animation = "none";
       void noti.offsetWidth;
@@ -422,8 +431,8 @@
           ? `✨ ${nombre}<br>`
           : `⛔ ${nombre}<br>`;
       });
-      if (emblemasObtenidos["🔴 No Confíes En 666"]) {
-        panelEmblemas.innerHTML += `<span class="emblema-rojo">🔴 No Confíes En 666</span><br>`;
+      if (emblemasObtenidos["👹 No Confíes En 666"]) {
+        panelEmblemas.innerHTML += `<span class="emblema-rojo">👹 No Confíes En 666</span><br>`;
       }
     }
 
@@ -438,7 +447,7 @@
       clickActual = 0;
       paso600 = false;
       paso660 = false;
-      evento666Disparado = false;
+      evento666Activado = false;
       numero.textContent = contador;
       document.body.classList.remove("victoria", "ritmo", "flash-amarillo", "flash-rojo");
       mensaje.classList.add("oculto");
