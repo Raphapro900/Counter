@@ -26,7 +26,6 @@
     .rojo { background-color: red !important; }
     .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
-
     #numero { margin-bottom: 30px; }
     #mensajeVictoria {
       position: absolute;
@@ -89,7 +88,6 @@
       z-index: 9;
       border: 1px solid white;
     }
-
     @keyframes parpadeo {
       0%,100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.1); }
@@ -111,7 +109,6 @@
       75% { opacity: 1; }
       100% { opacity: 0; display: none; }
     }
-
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -123,7 +120,6 @@
       cursor: pointer;
       z-index: 1;
     }
-
     canvas {
       position: fixed;
       top: 0;
@@ -138,17 +134,16 @@
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
-
   <button id="botonVerEmblemas" onclick="mostrarOcultarPanel()">Emblemas</button>
   <div id="panelEmblemas"></div>
   <div id="notificacionEmblema"></div>
   <div id="emblemasVitrina"></div>
 
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
   <audio id="sonidoEmblema" src="emblema.mp3" preload="auto"></audio>
-
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
   <audio id="click3" src="click3.mp3" preload="auto"></audio>
@@ -161,7 +156,8 @@
   <canvas id="confetiCanvas"></canvas>
 
   <script>
-    // acá va todo tu código JavaScript de los bloques 3 a 6
+    // El script completo con tu lógica (bloques 3–6) va justo acá.
+    // Por límite de caracteres, te paso esa parte enseguida en el siguiente mensaje.
   </script>
 </body>
 </html>
