@@ -63,6 +63,11 @@
       animation: fadeout 3s ease-out forwards;
       z-index: 10;
     }
+    .emblema-rojo {
+      color: red;
+      font-weight: bold;
+      text-shadow: 0 0 5px red;
+    }
     #botonVerEmblemas {
       position: fixed;
       top: 10px;
@@ -122,12 +127,6 @@
       100% { background-color: black; }
     }
 
-    .emblema-rojo {
-      color: red;
-      font-weight: bold;
-      text-shadow: 0 0 5px red;
-    }
-
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -159,7 +158,7 @@
   <button id="botonVerEmblemas" onclick="mostrarOcultarPanel()">Emblemas</button>
   <div id="panelEmblemas"></div>
 
-  <!-- Notificación y vitrina -->
+  <!-- Notificación inferior y vitrina -->
   <div id="notificacionEmblema"></div>
   <div id="emblemasVitrina"></div>
 
@@ -181,10 +180,10 @@
   <audio id="click7" src="click7.mp3" preload="auto"></audio>
   <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
-  <!-- Confeti -->
+  <!-- Canvas para confeti -->
   <canvas id="confetiCanvas"></canvas>
 
-  <!-- Video oculto del emblema maldito -->
+  <!-- Video oculto para emblema 666 -->
   <video id="video666" class="oculto" width="0" height="0">
     <source src="video666.mp4" type="video/mp4" />
   </video>
@@ -194,7 +193,6 @@
     let juegoActivo = false;
     let clickActual = 0;
     let tiempoClickRapido = [];
-    let tiempoClickUltra = [];
     let victorias = 0;
     let tiempoPaciencia = null;
     let esperaPaciencia = null;
@@ -202,8 +200,10 @@
     const totalEmblemas = 7;
     let temporizadorMetaSuprema = null;
     let emblemaFinalDesbloqueado = false;
-    let pausa666 = false;
-    let trigger666 = false;
+
+    let paso600 = false;
+    let paso660 = false;
+    let evento666Disparado = false;
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
@@ -241,7 +241,7 @@
     }
 
     function contar() {
-      if (!juegoActivo || contador >= 1000 || pausa666) return;
+      if (!juegoActivo || contador >= 1000) return;
 
       const valorAnterior = contador;
       contador += 10;
@@ -257,17 +257,10 @@
       sonido.play();
       clickActual = (clickActual + 1) % sonidosClick.length;
 
-      const ahora = Date.now();
-      tiempoClickRapido.push(ahora);
-      tiempoClickUltra.push(ahora);
-      tiempoClickRapido = tiempoClickRapido.filter(t => ahora - t < 10000);
-      tiempoClickUltra = tiempoClickUltra.filter(t => ahora - t < 2000);
-
-      if (tiempoClickRapido.length >= 20) desbloquearEmblema("⚡ Velocidad Loca");
+      // Emblemas normales
       if (contador === 100) desbloquearEmblema("🥇 Medalla de Bronce");
       if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
-      if (contador === 600) trigger666 = true;
-      if (contador === 666 && trigger666) activarEvento666();
+      if (contador === 666) desbloquearEmblema("📌 Clic Preciso");
 
       if (contador === 300 && !esperaPaciencia) {
         tiempoPaciencia = Date.now();
@@ -279,6 +272,15 @@
         esperaPaciencia = null;
       }
 
+      // Evento 666
+      if (contador === 600) paso600 = true;
+      if (paso600 && contador === 660) paso660 = true;
+      if (paso600 && paso660 && contador === 666 && !evento666Disparado) {
+        evento666Disparado = true;
+        activarEvento666();
+      }
+
+      // Victoria
       if (contador === 1000) {
         sonidoFinal.play();
         musicaFondo.pause();
@@ -292,8 +294,72 @@
         if (victorias === 3) desbloquearEmblema("💎 Diamante Triple");
       }
     }
+    function desbloquearEmblema(nombre) {
+      if (emblemasObtenidos[nombre]) return;
+      emblemasObtenidos[nombre] = true;
+
+      const vitrina = document.getElementById("emblemasVitrina");
+      const insignia = document.createElement("div");
+      insignia.textContent = nombre;
+      vitrina.appendChild(insignia);
+
+      noti.textContent = `🏆 Emblema desbloqueado: ${nombre}`;
+      noti.style.display = "block";
+      noti.style.animation = "none";
+      void noti.offsetWidth;
+      noti.style.animation = "fadeout 3s ease-out forwards";
+
+      const sonido = document.getElementById("sonidoEmblema");
+      sonido.playbackRate = 1;
+      sonido.currentTime = 0;
+      sonido.play();
+
+      const cantidad = Object.keys(emblemasObtenidos).filter(k => k !== "🔴 No Confíes En 666").length;
+      if (
+        cantidad === totalEmblemas - 1 &&
+        !emblemasObtenidos["🏁 Meta Suprema"] &&
+        !temporizadorMetaSuprema
+      ) {
+        temporizadorMetaSuprema = setTimeout(() => {
+          if (!emblemasObtenidos["🏁 Meta Suprema"]) {
+            desbloquearMetaSuprema();
+          }
+        }, 3000);
+      }
+
+      actualizarPanelEmblemas();
+    }
+
+    function desbloquearMetaSuprema() {
+      emblemasObtenidos["🏁 Meta Suprema"] = true;
+      temporizadorMetaSuprema = null;
+
+      document.body.classList.add("flash-amarillo");
+      setTimeout(() => {
+        document.body.classList.remove("flash-amarillo");
+      }, 300);
+
+      const vitrina = document.getElementById("emblemasVitrina");
+      const insignia = document.createElement("div");
+      insignia.textContent = "🏁 Meta Suprema";
+      vitrina.appendChild(insignia);
+
+      noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
+      noti.style.display = "block";
+      noti.style.animation = "none";
+      void noti.offsetWidth;
+      noti.style.animation = "fadeout 3s ease-out forwards";
+
+      const s = document.getElementById("sonidoCompletos");
+      s.playbackRate = 1;
+      s.currentTime = 0;
+      s.play();
+
+      lanzarConfeti();
+      actualizarPanelEmblemas();
+    }
+
     function activarEvento666() {
-      pausa666 = true;
       noti.textContent = "❗ Algo no está bien...";
       noti.style.display = "block";
       noti.style.animation = "none";
@@ -311,6 +377,7 @@
       video.width = 1;
       video.height = 1;
       video.play();
+
       const sonido = document.getElementById("sonidoMisterio");
       sonido.currentTime = 0;
       sonido.play();
@@ -325,7 +392,6 @@
         video.pause();
         video.currentTime = 0;
         video.style.display = "none";
-        pausa666 = false;
       };
     }
 
@@ -352,11 +418,9 @@
     function actualizarPanelEmblemas() {
       panelEmblemas.innerHTML = "<strong>🏅 Emblemas:</strong><br><br>";
       listaEmblemas.forEach(nombre => {
-        if (emblemasObtenidos[nombre]) {
-          panelEmblemas.innerHTML += `✨ ${nombre}<br>`;
-        } else {
-          panelEmblemas.innerHTML += `⛔ ${nombre}<br>`;
-        }
+        panelEmblemas.innerHTML += emblemasObtenidos[nombre]
+          ? `✨ ${nombre}<br>`
+          : `⛔ ${nombre}<br>`;
       });
       if (emblemasObtenidos["🔴 No Confíes En 666"]) {
         panelEmblemas.innerHTML += `<span class="emblema-rojo">🔴 No Confíes En 666</span><br>`;
@@ -364,18 +428,17 @@
     }
 
     function mostrarOcultarPanel() {
-      if (panelEmblemas.style.display === "block") {
-        panelEmblemas.style.display = "none";
-      } else {
-        actualizarPanelEmblemas();
-        panelEmblemas.style.display = "block";
-      }
+      panelEmblemas.style.display =
+        panelEmblemas.style.display === "block" ? "none" : "block";
+      actualizarPanelEmblemas();
     }
     function reiniciar(e) {
       e.stopPropagation();
       contador = 0;
-      trigger666 = false;
-      pausa666 = false;
+      clickActual = 0;
+      paso600 = false;
+      paso660 = false;
+      evento666Disparado = false;
       numero.textContent = contador;
       document.body.classList.remove("victoria", "ritmo", "flash-amarillo", "flash-rojo");
       mensaje.classList.add("oculto");
@@ -386,7 +449,6 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       btnReiniciar.classList.add("oculto");
       tiempoClickRapido = [];
-      tiempoClickUltra = [];
       clearTimeout(esperaPaciencia);
       esperaPaciencia = null;
       juegoActivo = true;
