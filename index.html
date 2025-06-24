@@ -154,13 +154,9 @@
   <audio id="click7" src="click7.mp3" preload="auto"></audio>
   <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
-  <!-- Canvas -->
+  <!-- Canvas y video -->
   <canvas id="confetiCanvas"></canvas>
-
-  <!-- Video -->
-  <video id="video666" class="oculto">
-    <source src="video666.mp4" type="video/mp4" />
-  </video>
+  <video id="video666" class="oculto"><source src="video666.mp4" type="video/mp4" /></video>
 
   <script>
     let contador = 0;
@@ -187,7 +183,6 @@ const canvas = document.getElementById("confetiCanvas");
 const ctx = canvas.getContext("2d");
 
 const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, click8];
-
 const musicaFondo = document.getElementById("musicaFondo");
 const musicaVictoria = document.getElementById("musicaVictoria");
 const sonidoFinal = document.getElementById("sonidoFinal");
@@ -218,7 +213,7 @@ function contar() {
   const antesDelClick = contador;
 
   if (contador === 660) {
-    contador += 6; // salto directo al 666
+    contador += 6;
   } else {
     contador += 10;
   }
@@ -258,7 +253,6 @@ function contar() {
     musicaInterrumpida = true;
     musicaFondo.pause();
     document.body.style.backgroundColor = "darkred";
-
     setTimeout(() => {
       if (contador === 666) {
         desbloquearEmblema("👹 No Confíes En 666");
@@ -281,179 +275,168 @@ function contar() {
   }
     }
     function desbloquearEmblema(nombre) {
-      if (emblemasObtenidos[nombre]) return;
-      emblemasObtenidos[nombre] = true;
+  if (emblemasObtenidos[nombre]) return;
+  emblemasObtenidos[nombre] = true;
 
-      const vitrina = document.getElementById("emblemasVitrina");
-      const insignia = document.createElement("div");
-      insignia.textContent = nombre;
-      vitrina.appendChild(insignia);
+  const vitrina = document.getElementById("emblemasVitrina");
+  const insignia = document.createElement("div");
+  insignia.textContent = nombre;
+  vitrina.appendChild(insignia);
 
-      const noti = document.getElementById("notificacionEmblema");
-      noti.textContent = `🏆 Emblema desbloqueado: ${nombre}`;
-      noti.style.display = "block";
-      noti.style.animation = "none";
-      void noti.offsetWidth;
-      noti.style.animation = "fadeout 3s ease-out forwards";
+  const noti = document.getElementById("notificacionEmblema");
+  noti.textContent = `🏆 Emblema desbloqueado: ${nombre}`;
+  noti.style.display = "block";
+  noti.style.animation = "none";
+  void noti.offsetWidth;
+  noti.style.animation = "fadeout 3s ease-out forwards";
 
-      const sonido = document.getElementById("sonidoEmblema");
-      sonido.playbackRate = 1;
-      sonido.currentTime = 0;
-      sonido.play();
+  const sonido = document.getElementById("sonidoEmblema");
+  sonido.playbackRate = 1;
+  sonido.currentTime = 0;
+  sonido.play();
 
-      const cantidad = Object.keys(emblemasObtenidos).length;
-      if (cantidad === totalEmblemas - 1 && !emblemaFinalDesbloqueado && nombre !== "🏁 Meta Suprema") {
-        desbloquearEmblema("🏁 Meta Suprema");
-      }
-      if (cantidad === totalEmblemas && !emblemaFinalDesbloqueado) {
-        emblemaFinalDesbloqueado = true;
+  const cantidad = Object.keys(emblemasObtenidos).length;
+  if (cantidad === totalEmblemas - 1 && !emblemaFinalDesbloqueado && nombre !== "🏁 Meta Suprema") {
+    desbloquearEmblema("🏁 Meta Suprema");
+  }
+  if (cantidad === totalEmblemas && !emblemaFinalDesbloqueado) {
+    emblemaFinalDesbloqueado = true;
+    const s1 = sonido.cloneNode();
+    const s2 = sonidoFinal.cloneNode();
+    s1.playbackRate = 2.0;
+    s2.playbackRate = 2.0;
+    s1.play(); s2.play();
+    lanzarConfeti();
+    noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
+    noti.style.display = "block";
+    noti.style.animation = "none";
+    void noti.offsetWidth;
+    noti.style.animation = "fadeout 3s ease-out forwards";
+  }
 
-        const s1 = document.getElementById("sonidoEmblema").cloneNode();
-        const s2 = document.getElementById("sonidoFinal").cloneNode();
-        s1.playbackRate = 2.0;
-        s2.playbackRate = 2.0;
-        s1.play(); s2.play();
+  actualizarPanelEmblemas();
+}
 
-        lanzarConfeti();
+function actualizarPanelEmblemas() {
+  panelEmblemas.innerHTML = "<strong>🏅 Emblemas:</strong><br><br>";
+  listaEmblemas.forEach(nombre => {
+    panelEmblemas.innerHTML += emblemasObtenidos[nombre]
+      ? `✨ ${nombre}<br>`
+      : `⛔ ${nombre}<br>`;
+  });
+}
 
-        noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
-        noti.style.display = "block";
-        noti.style.animation = "none";
-        void noti.offsetWidth;
-        noti.style.animation = "fadeout 3s ease-out forwards";
-      }
+function mostrarOcultarPanel() {
+  panelEmblemas.style.display =
+    panelEmblemas.style.display === "block" ? "none" : "block";
+  if (panelEmblemas.style.display === "block") actualizarPanelEmblemas();
+}
 
-      actualizarPanelEmblemas();
-    }
+function mostrarVideo666() {
+  const video = document.getElementById("video666");
+  video.classList.remove("oculto");
+  video.style.position = "fixed";
+  video.style.top = "0";
+  video.style.left = "0";
+  video.style.width = "100vw";
+  video.style.height = "100vh";
+  video.style.zIndex = "1000";
+  video.style.objectFit = "cover";
 
-    function actualizarPanelEmblemas() {
-      panelEmblemas.innerHTML = "<strong>🏅 Emblemas:</strong><br><br>";
-      listaEmblemas.forEach(nombre => {
-        if (emblemasObtenidos[nombre]) {
-          panelEmblemas.innerHTML += `✨ ${nombre}<br>`;
-        } else {
-          panelEmblemas.innerHTML += `⛔ ${nombre}<br>`;
-        }
+  setTimeout(() => {
+    video.play();
+    video.onended = () => {
+      video.pause();
+      video.classList.add("oculto");
+
+      const textoFinal = document.createElement("div");
+      textoFinal.id = "mensaje666";
+      textoFinal.innerHTML = "<em>Haz cerrado la puerta al infierno, te encontramos por suerte aquí</em>";
+      Object.assign(textoFinal.style, {
+        position: "fixed",
+        top: "35%",
+        left: "0",
+        width: "100%",
+        textAlign: "center",
+        fontSize: "3em",
+        color: "red",
+        fontFamily: "'Creepster', cursive",
+        letterSpacing: "2px",
+        textShadow: "0 0 12px darkred",
+        opacity: "0",
+        transition: "opacity 2s",
+        zIndex: "999"
       });
-    }
 
-    function mostrarOcultarPanel() {
-      if (panelEmblemas.style.display === "block") {
-        panelEmblemas.style.display = "none";
-      } else {
-        actualizarPanelEmblemas();
-        panelEmblemas.style.display = "block";
-      }
-    }
-
-    function mostrarVideo666() {
-      const video = document.getElementById("video666");
-      video.classList.remove("oculto");
-      video.style.position = "fixed";
-      video.style.top = "0";
-      video.style.left = "0";
-      video.style.width = "100vw";
-      video.style.height = "100vh";
-      video.style.zIndex = "1000";
-      video.style.objectFit = "cover";
-      video.play();
-
+      document.body.appendChild(textoFinal);
       const sonido = document.getElementById("sonidoMisterio");
       sonido.currentTime = 0;
       sonido.play();
+      setTimeout(() => textoFinal.style.opacity = "1", 100);
 
-      document.body.classList.add("flash-rojo");
-      setTimeout(() => document.body.classList.remove("flash-rojo"), 300);
-
-      video.onended = () => {
-        video.pause();
-        video.classList.add("oculto");
-
-        const textoFinal = document.createElement("div");
-        textoFinal.id = "mensaje666";
-        textoFinal.innerHTML = "<em>Has aceptado lo inaceptable...</em>";
-        Object.assign(textoFinal.style, {
-          position: "fixed",
-          top: "35%",
-          left: "0",
-          width: "100%",
-          textAlign: "center",
-          fontSize: "3em",
-          color: "crimson",
-          fontFamily: "'Creepster', cursive",
-          letterSpacing: "2px",
-          textShadow: "0 0 10px darkred",
-          opacity: "0",
-          transition: "opacity 2s",
-          zIndex: "999"
-        });
-        document.body.appendChild(textoFinal);
-        setTimeout(() => {
-          textoFinal.style.opacity = "1";
-          sonido.currentTime = 0;
-          sonido.play();
-        }, 100);
-
-        setTimeout(() => {
-          textoFinal.remove();
-          document.body.style.backgroundColor = "black";
-          if (!musicaInterrumpida) musicaFondo.play().catch(() => {});
-        }, 19000);
-      };
+      setTimeout(() => {
+        textoFinal.remove();
+        document.body.style.backgroundColor = "black";
+        numero.textContent = "670";
+        contador = 670;
+        if (!musicaInterrumpida) musicaFondo.play().catch(() => {});
+      }, 8000);
+    };
+  }, 5000);
     }
     function reiniciar(e) {
-      e.stopPropagation();
-      contador = 0;
-      numero.textContent = contador;
-      document.body.classList.remove("victoria", "ritmo");
-      mensaje.classList.add("oculto");
-      musicaVictoria.pause();
-      musicaVictoria.currentTime = 0;
-      musicaFondo.currentTime = 0;
-      musicaFondo.play();
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      btnReiniciar.classList.add("oculto");
-      tiempoClickRapido = [];
-      clearTimeout(esperaPaciencia);
-      esperaPaciencia = null;
-      juegoActivo = true;
-      numero.classList.remove("oculto");
+  e.stopPropagation();
+  contador = 0;
+  numero.textContent = contador;
+  document.body.classList.remove("victoria", "ritmo");
+  mensaje.classList.add("oculto");
+  musicaVictoria.pause();
+  musicaVictoria.currentTime = 0;
+  musicaFondo.currentTime = 0;
+  musicaFondo.play();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  btnReiniciar.classList.add("oculto");
+  tiempoClickRapido = [];
+  clearTimeout(esperaPaciencia);
+  esperaPaciencia = null;
+  juegoActivo = true;
+  numero.classList.remove("oculto");
+}
+
+function lanzarConfeti() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const confetis = [];
+
+  for (let i = 0; i < 250; i++) {
+    confetis.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height,
+      r: Math.random() * 6 + 4,
+      d: Math.random() * 10 + 10,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+      tilt: Math.random() * 10 - 5,
+      tiltAngle: 0
+    });
+  }
+
+  function animar() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let c of confetis) {
+      ctx.beginPath();
+      ctx.lineWidth = c.r;
+      ctx.strokeStyle = c.color;
+      ctx.moveTo(c.x + c.tilt, c.y);
+      ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
+      ctx.stroke();
+      c.y += 4;
+      c.tiltAngle += 0.1;
+      c.tilt = Math.sin(c.tiltAngle) * 10;
     }
+    requestAnimationFrame(animar);
+  }
 
-    function lanzarConfeti() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      const confetis = [];
-
-      for (let i = 0; i < 250; i++) {
-        confetis.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * -canvas.height,
-          r: Math.random() * 6 + 4,
-          d: Math.random() * 10 + 10,
-          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
-          tilt: Math.random() * 10 - 5,
-          tiltAngle: 0
-        });
-      }
-
-      function animar() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let c of confetis) {
-          ctx.beginPath();
-          ctx.lineWidth = c.r;
-          ctx.strokeStyle = c.color;
-          ctx.moveTo(c.x + c.tilt, c.y);
-          ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
-          ctx.stroke();
-          c.y += 4;
-          c.tiltAngle += 0.1;
-          c.tilt = Math.sin(c.tiltAngle) * 10;
-        }
-        requestAnimationFrame(animar);
-      }
-
-      animar();
+  animar();
     }
     </script>
 </body>
