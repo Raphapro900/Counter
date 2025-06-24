@@ -161,7 +161,7 @@
   <audio id="click7" src="click7.mp3" preload="auto"></audio>
   <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
-  <!-- Canvases -->
+  <!-- Confeti -->
   <canvas id="confetiCanvas"></canvas>
 
   <script>
@@ -176,6 +176,7 @@
     let emblemasObtenidos = {};
     const totalEmblemas = 7;
     let emblemaFinalDesbloqueado = false;
+    let temporizadorMetaSuprema = null;
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
@@ -243,7 +244,7 @@
         tiempoPaciencia = Date.now();
         esperaPaciencia = setTimeout(() => {
           if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
-        }, 180000); // 3 minutos
+        }, 180000);
       } else if (contador !== 300) {
         clearTimeout(esperaPaciencia);
         esperaPaciencia = null;
@@ -280,37 +281,52 @@
       void noti.offsetWidth;
       noti.style.animation = "fadeout 3s ease-out forwards";
 
-      // Sonido
+      // Sonido normal
       const sonido = document.getElementById("sonidoEmblema");
       sonido.playbackRate = 1;
       sonido.currentTime = 0;
       sonido.play();
 
-      // ¿Completó todos?
+      // Verificar si solo falta Meta Suprema
       const cantidad = Object.keys(emblemasObtenidos).length;
-      if (cantidad === totalEmblemas - 1 && !emblemaFinalDesbloqueado && nombre !== "🏁 Meta Suprema") {
-        desbloquearEmblema("🏁 Meta Suprema");
-      }
-      if (cantidad === totalEmblemas && !emblemaFinalDesbloqueado) {
-        emblemaFinalDesbloqueado = true;
-        // Sonidos con pitch x2
-        const s1 = document.getElementById("sonidoEmblema").cloneNode();
-        const s2 = document.getElementById("sonidoFinal").cloneNode();
-        s1.playbackRate = 2.0;
-        s2.playbackRate = 2.0;
-        s1.play(); s2.play();
-
-        // Confeti explosivo
-        lanzarConfeti();
-
-        // Noti final
-        noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
-        noti.style.display = "block";
-        noti.style.animation = "none";
-        void noti.offsetWidth;
-        noti.style.animation = "fadeout 3s ease-out forwards";
+      if (
+        cantidad === totalEmblemas - 1 &&
+        !emblemaFinalDesbloqueado &&
+        !emblemasObtenidos["🏁 Meta Suprema"]
+      ) {
+        if (temporizadorMetaSuprema) clearTimeout(temporizadorMetaSuprema);
+        temporizadorMetaSuprema = setTimeout(() => {
+          desbloquearMetaSuprema();
+        }, 3000); // ⏱️ 3 segundos exactos
       }
 
+      actualizarPanelEmblemas();
+    }
+
+    function desbloquearMetaSuprema() {
+      emblemaFinalDesbloqueado = true;
+      emblemasObtenidos["🏁 Meta Suprema"] = true;
+
+      const vitrina = document.getElementById("emblemasVitrina");
+      const insignia = document.createElement("div");
+      insignia.textContent = "🏁 Meta Suprema";
+      vitrina.appendChild(insignia);
+
+      const noti = document.getElementById("notificacionEmblema");
+      noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
+      noti.style.display = "block";
+      noti.style.animation = "none";
+      void noti.offsetWidth;
+      noti.style.animation = "fadeout 3s ease-out forwards";
+
+      const s1 = document.getElementById("sonidoEmblema").cloneNode();
+      const s2 = document.getElementById("sonidoFinal").cloneNode();
+      s1.playbackRate = 2.0;
+      s2.playbackRate = 2.0;
+      s1.play();
+      s2.play();
+
+      lanzarConfeti();
       actualizarPanelEmblemas();
     }
 
