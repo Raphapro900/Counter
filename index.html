@@ -26,6 +26,9 @@
     .rojo { background-color: red !important; }
     .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
+    .flash-amarillo {
+      animation: flashAmarillo 0.3s;
+    }
 
     #numero { margin-bottom: 30px; }
     #mensajeVictoria {
@@ -111,6 +114,10 @@
       75% { opacity: 1; }
       100% { opacity: 0; display: none; }
     }
+    @keyframes flashAmarillo {
+      0% { background-color: yellow; }
+      100% { background-color: black; }
+    }
 
     button {
       font-family: 'Bebas Neue', sans-serif;
@@ -139,10 +146,11 @@
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
 
-  <!-- Botón para ver la lista de emblemas -->
+  <!-- Botón y panel de emblemas -->
   <button id="botonVerEmblemas" onclick="mostrarOcultarPanel()">Emblemas</button>
   <div id="panelEmblemas"></div>
 
+  <!-- Notificación inferior y vitrina -->
   <div id="notificacionEmblema"></div>
   <div id="emblemasVitrina"></div>
 
@@ -151,6 +159,7 @@
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
   <audio id="sonidoEmblema" src="emblema.mp3" preload="auto"></audio>
+  <audio id="sonidoCompletos" src="emblemas_completos.mp3" preload="auto"></audio>
 
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
@@ -161,7 +170,7 @@
   <audio id="click7" src="click7.mp3" preload="auto"></audio>
   <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
-  <!-- Confeti -->
+  <!-- Canvas de confeti -->
   <canvas id="confetiCanvas"></canvas>
 
   <script>
@@ -175,15 +184,15 @@
     let esperaPaciencia = null;
     let emblemasObtenidos = {};
     const totalEmblemas = 7;
-    let emblemaFinalDesbloqueado = false;
     let temporizadorMetaSuprema = null;
+    let emblemaFinalDesbloqueado = false;
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
     const btnEmpezar = document.getElementById("empezar");
     const btnReiniciar = document.getElementById("reiniciar");
     const panelEmblemas = document.getElementById("panelEmblemas");
-
+    const noti = document.getElementById("notificacionEmblema");
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
 
@@ -274,58 +283,67 @@
       vitrina.appendChild(insignia);
 
       // Notificación
-      const noti = document.getElementById("notificacionEmblema");
       noti.textContent = `🏆 Emblema desbloqueado: ${nombre}`;
       noti.style.display = "block";
       noti.style.animation = "none";
       void noti.offsetWidth;
       noti.style.animation = "fadeout 3s ease-out forwards";
 
-      // Sonido normal
+      // Sonido
       const sonido = document.getElementById("sonidoEmblema");
       sonido.playbackRate = 1;
       sonido.currentTime = 0;
       sonido.play();
 
-      // Verificar si solo falta Meta Suprema
       const cantidad = Object.keys(emblemasObtenidos).length;
+
+      // Si hay exactamente 6 emblemas y Meta Suprema aún no fue desbloqueado
       if (
         cantidad === totalEmblemas - 1 &&
-        !emblemaFinalDesbloqueado &&
-        !emblemasObtenidos["🏁 Meta Suprema"]
+        !emblemasObtenidos["🏁 Meta Suprema"] &&
+        !temporizadorMetaSuprema
       ) {
-        if (temporizadorMetaSuprema) clearTimeout(temporizadorMetaSuprema);
         temporizadorMetaSuprema = setTimeout(() => {
-          desbloquearMetaSuprema();
-        }, 3000); // ⏱️ 3 segundos exactos
+          if (!emblemasObtenidos["🏁 Meta Suprema"]) {
+            desbloquearMetaSuprema();
+          }
+        }, 3000);
       }
 
       actualizarPanelEmblemas();
     }
 
     function desbloquearMetaSuprema() {
-      emblemaFinalDesbloqueado = true;
       emblemasObtenidos["🏁 Meta Suprema"] = true;
+      emblemaFinalDesbloqueado = true;
+      temporizadorMetaSuprema = null;
 
+      // Añadir flash amarillo
+      document.body.classList.add("flash-amarillo");
+      setTimeout(() => {
+        document.body.classList.remove("flash-amarillo");
+      }, 300);
+
+      // Mostrar en vitrina
       const vitrina = document.getElementById("emblemasVitrina");
       const insignia = document.createElement("div");
       insignia.textContent = "🏁 Meta Suprema";
       vitrina.appendChild(insignia);
 
-      const noti = document.getElementById("notificacionEmblema");
+      // Notificación
       noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
       noti.style.display = "block";
       noti.style.animation = "none";
       void noti.offsetWidth;
       noti.style.animation = "fadeout 3s ease-out forwards";
 
-      const s1 = document.getElementById("sonidoEmblema").cloneNode();
-      const s2 = document.getElementById("sonidoFinal").cloneNode();
-      s1.playbackRate = 2.0;
-      s2.playbackRate = 2.0;
-      s1.play();
-      s2.play();
+      // Sonido único
+      const s = document.getElementById("sonidoCompletos");
+      s.playbackRate = 1;
+      s.currentTime = 0;
+      s.play();
 
+      // Confeti loco
       lanzarConfeti();
       actualizarPanelEmblemas();
     }
@@ -333,27 +351,22 @@
     function actualizarPanelEmblemas() {
       panelEmblemas.innerHTML = "<strong>🏅 Emblemas:</strong><br><br>";
       listaEmblemas.forEach(nombre => {
-        if (emblemasObtenidos[nombre]) {
-          panelEmblemas.innerHTML += `✨ ${nombre}<br>`;
-        } else {
-          panelEmblemas.innerHTML += `⛔ ${nombre}<br>`;
-        }
+        panelEmblemas.innerHTML += emblemasObtenidos[nombre]
+          ? `✨ ${nombre}<br>`
+          : `⛔ ${nombre}<br>`;
       });
     }
 
     function mostrarOcultarPanel() {
-      if (panelEmblemas.style.display === "block") {
-        panelEmblemas.style.display = "none";
-      } else {
-        actualizarPanelEmblemas();
-        panelEmblemas.style.display = "block";
-      }
+      panelEmblemas.style.display =
+        panelEmblemas.style.display === "block" ? "none" : "block";
+      actualizarPanelEmblemas();
     }
     function reiniciar(e) {
       e.stopPropagation();
       contador = 0;
       numero.textContent = contador;
-      document.body.classList.remove("victoria", "ritmo");
+      document.body.classList.remove("victoria", "ritmo", "flash-amarillo");
       mensaje.classList.add("oculto");
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
