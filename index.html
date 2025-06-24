@@ -5,8 +5,140 @@
   <title>Contador Raphástico</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
-    /* ... Tus estilos originales + clases blur, rojo, temblor, ritmo ... */
-    /* (omitido aquí por espacio, pero ya lo tengo todo como lo pasaste) */
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      transition: background 0.5s;
+    }
+
+    .oculto { display: none; }
+    .blur { filter: blur(5px); transition: filter 0.3s; }
+    .temblor { animation: temblor 0.3s; }
+    .rojo { background-color: red !important; }
+    .victoria { background-color: #00cc00 !important; color: black; }
+    .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
+
+    #numero { margin-bottom: 30px; }
+    #mensajeVictoria {
+      position: absolute;
+      top: 20%;
+      font-size: 80px;
+      color: yellow;
+      text-shadow: 4px 4px 0 black;
+      animation: parpadeo 1s infinite;
+      z-index: 10;
+    }
+
+    #emblemasVitrina {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 26px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      z-index: 5;
+    }
+
+    #notificacionEmblema {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      font-size: 22px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      color: gold;
+      border: 2px solid gold;
+      border-radius: 10px;
+      display: none;
+      animation: fadeout 3s ease-out forwards;
+      z-index: 10;
+    }
+
+    #botonVerEmblemas {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      background: white;
+      color: black;
+      padding: 5px 15px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    #panelEmblemas {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background: rgba(0,0,0,0.9);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+      z-index: 9;
+      border: 1px solid white;
+    }
+
+    @keyframes parpadeo {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+
+    @keyframes vibrar {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(3px,-3px); }
+      50% { transform: translate(-3px,3px); }
+      75% { transform: translate(3px,3px); }
+    }
+
+    @keyframes temblor {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(4px,-4px); }
+      50% { transform: translate(-4px,4px); }
+      75% { transform: translate(4px,4px); }
+    }
+
+    @keyframes fadeout {
+      0% { opacity: 1; }
+      75% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+
+    button {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      padding: 10px 40px;
+      border: none;
+      border-radius: 12px;
+      background: white;
+      color: black;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
   </style>
 </head>
 <body>
@@ -20,41 +152,26 @@
   <div id="notificacionEmblema"></div>
   <div id="emblemasVitrina"></div>
 
+  <!-- Música y sonidos -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
   <audio id="sonidoEmblema" src="emblema.mp3" preload="auto"></audio>
 
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
-  <!-- ...hasta click8... -->
+  <audio id="click2" src="click2.mp3" preload="auto"></audio>
+  <audio id="click3" src="click3.mp3" preload="auto"></audio>
+  <audio id="click4" src="click4.mp3" preload="auto"></audio>
+  <audio id="click5" src="click5.mp3" preload="auto"></audio>
+  <audio id="click6" src="click6.mp3" preload="auto"></audio>
+  <audio id="click7" src="click7.mp3" preload="auto"></audio>
+  <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
+  <!-- Canvas para confeti -->
   <canvas id="confetiCanvas"></canvas>
 
   <script>
-    <body>
-  <div id="numero" class="oculto">0</div>
-  <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
-  <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
-  <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
-
-  <button id="botonVerEmblemas" onclick="mostrarOcultarPanel()">Emblemas</button>
-  <div id="panelEmblemas"></div>
-  <div id="notificacionEmblema"></div>
-  <div id="emblemasVitrina"></div>
-
-  <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
-  <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
-  <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
-  <audio id="sonidoEmblema" src="emblema.mp3" preload="auto"></audio>
-
-  <audio id="click1" src="click1.mp3" preload="auto"></audio>
-  <!-- ...hasta click8... -->
-
-  <canvas id="confetiCanvas"></canvas>
-
-  <script>
-      <script>
-let contador = 0;
+    let contador = 0;
 let juegoActivo = false;
 let clickActual = 0;
 let tiempoClickRapido = [];
@@ -64,8 +181,6 @@ let tiempoPaciencia = null;
 let esperaPaciencia = null;
 let emblemasObtenidos = {};
 const totalEmblemas = 7;
-let emblemaFinalDesbloqueado = false;
-let temporizadorMetaSuprema = null;
 
 const numero = document.getElementById("numero");
 const mensaje = document.getElementById("mensajeVictoria");
@@ -156,16 +271,18 @@ function contar() {
   ) {
     iniciarCreditosFinales();
   }
-      }
+    }
     function desbloquearEmblema(nombre) {
   if (emblemasObtenidos[nombre]) return;
   emblemasObtenidos[nombre] = true;
 
+  // Mostrar en vitrina
   const vitrina = document.getElementById("emblemasVitrina");
   const insignia = document.createElement("div");
   insignia.textContent = nombre;
   vitrina.appendChild(insignia);
 
+  // Notificación dorada
   const noti = document.getElementById("notificacionEmblema");
   noti.textContent = `🏆 Emblema desbloqueado: ${nombre}`;
   noti.style.display = "block";
@@ -173,6 +290,7 @@ function contar() {
   void noti.offsetWidth;
   noti.style.animation = "fadeout 3s ease-out forwards";
 
+  // Sonido
   const sonido = document.getElementById("sonidoEmblema");
   sonido.playbackRate = 1;
   sonido.currentTime = 0;
@@ -180,6 +298,7 @@ function contar() {
 
   actualizarPanelEmblemas();
 
+  // Si ya tenés TODOS los emblemas, activar créditos
   if (
     Object.keys(emblemasObtenidos).length === totalEmblemas &&
     !document.getElementById("creditosActivos")
@@ -265,6 +384,7 @@ function lanzarConfeti() {
     function iniciarCreditosFinales() {
   if (document.getElementById("creditosActivos")) return;
 
+  // Crear fondo negro
   const overlay = document.createElement("div");
   overlay.id = "creditosActivos";
   overlay.style.position = "fixed";
@@ -280,5 +400,58 @@ function lanzarConfeti() {
   overlay.style.overflow = "hidden";
   overlay.classList.add("barras-cine");
 
+  // Texto que hace scroll
   const creditos = document.createElement("div");
-  credit[43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/ogorodnikoff2012/Dragonfly/tree/3a80c59795382267cbd44d65c9acbbbdd2b11a78/lib%2Fmessage.js?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054 "1")
+  creditos.style.color = "white";
+  creditos.style.fontSize = "30px";
+  creditos.style.textAlign = "center";
+  creditos.style.animation = "scrollCreditos 16s linear forwards";
+  creditos.innerHTML = `
+    🎬 <br><br>
+    Idea: Raphapro900
+    Scripts: Copilot AI
+    Web Para Poner Los Scripts: Github
+    Musica De Fondo Del Contador: Ezequiel David Urbano
+    Musica Cuando Llegas Al Número 1000: Suno AI
+    Sonido De Clicks: Raphapro900
+    ¡Gracias Por Jugar!
+  `;
+  overlay.appendChild(creditos);
+  document.body.appendChild(overlay);
+
+  // Música lenta
+  musicaFondo.playbackRate = 0.7;
+
+  // Barras negras solo durante créditos
+  const estiloCine = document.createElement("style");
+  estiloCine.innerHTML = `
+    .barras-cine::before,
+    .barras-cine::after {
+      content: '';
+      position: fixed;
+      left: 0;
+      right: 0;
+      background: black;
+      height: 130px;
+      z-index: 9998;
+    }
+    .barras-cine::before { top: 0; }
+    .barras-cine::after { bottom: 0; }
+
+    @keyframes scrollCreditos {
+      0% { transform: translateY(100%); }
+      100% { transform: translateY(-100%); }
+    }
+  `;
+  document.head.appendChild(estiloCine);
+
+  // Restaurar tras 16 segundos
+  setTimeout(() => {
+    document.body.removeChild(overlay);
+    document.head.removeChild(estiloCine);
+    musicaFondo.playbackRate = 1.0;
+  }, 16000);
+}
+</script>
+</body>
+</html>
