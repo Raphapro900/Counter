@@ -156,7 +156,9 @@
 
   <!-- Canvas y video -->
   <canvas id="confetiCanvas"></canvas>
-  <video id="video666" class="oculto"><source src="video666.mp4" type="video/mp4" /></video>
+  <video id="video666" class="oculto">
+    <source src="video666.mp4" type="video/mp4" />
+  </video>
 
   <script>
     let contador = 0;
@@ -171,6 +173,7 @@ const totalEmblemas = 7;
 let emblemaFinalDesbloqueado = false;
 
 let evento666Activado = false;
+let evento666EnProgreso = false;
 let musicaInterrumpida = false;
 
 const numero = document.getElementById("numero");
@@ -212,8 +215,15 @@ function contar() {
 
   const antesDelClick = contador;
 
+  // Salto de 660 a 666
   if (contador === 660) {
     contador += 6;
+  } else if (contador === 666 && !evento666Activado) {
+    // Si el jugador no esperó, se salta a 670
+    evento666Activado = true;
+    contador = 670;
+    numero.textContent = contador;
+    return;
   } else {
     contador += 10;
   }
@@ -248,13 +258,15 @@ function contar() {
     esperaPaciencia = null;
   }
 
-  if (contador === 666 && !evento666Activado) {
-    evento666Activado = true;
+  if (contador === 666 && !evento666EnProgreso) {
+    evento666EnProgreso = true;
     musicaInterrumpida = true;
     musicaFondo.pause();
     document.body.style.backgroundColor = "darkred";
+
     setTimeout(() => {
-      if (contador === 666) {
+      if (contador === 666 && !evento666Activado) {
+        evento666Activado = true;
         desbloquearEmblema("👹 No Confíes En 666");
         mostrarVideo666();
       }
@@ -349,16 +361,18 @@ function mostrarVideo666() {
       video.pause();
       video.classList.add("oculto");
 
+      document.body.style.backgroundColor = "black";
+
       const textoFinal = document.createElement("div");
       textoFinal.id = "mensaje666";
       textoFinal.innerHTML = "<em>Haz cerrado la puerta al infierno, te encontramos por suerte aquí</em>";
       Object.assign(textoFinal.style, {
         position: "fixed",
-        top: "35%",
+        top: "38%",
         left: "0",
         width: "100%",
         textAlign: "center",
-        fontSize: "3em",
+        fontSize: "2em",
         color: "red",
         fontFamily: "'Creepster', cursive",
         letterSpacing: "2px",
@@ -376,7 +390,6 @@ function mostrarVideo666() {
 
       setTimeout(() => {
         textoFinal.remove();
-        document.body.style.backgroundColor = "black";
         numero.textContent = "670";
         contador = 670;
         if (!musicaInterrumpida) musicaFondo.play().catch(() => {});
@@ -400,6 +413,8 @@ function mostrarVideo666() {
   clearTimeout(esperaPaciencia);
   esperaPaciencia = null;
   juegoActivo = true;
+  evento666Activado = false;
+  evento666EnProgreso = false;
   numero.classList.remove("oculto");
 }
 
