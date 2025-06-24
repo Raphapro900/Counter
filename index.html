@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Clicker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
-      font-family: sans-serif;
+      font-family: 'Bebas Neue', sans-serif;
       background: #111;
       color: white;
       overflow: hidden;
@@ -27,6 +28,7 @@
       border: none;
       color: white;
       border-radius: 8px;
+      font-family: 'Bebas Neue', sans-serif;
     }
     .emblems {
       margin-top: 20px;
@@ -49,11 +51,10 @@
       animation: shake 0.3s;
     }
     @keyframes shake {
-      0% { transform: translate(0, 0); }
+      0%, 100% { transform: translate(0, 0); }
       25% { transform: translate(-5px, 5px); }
       50% { transform: translate(5px, -5px); }
       75% { transform: translate(-5px, 5px); }
-      100% { transform: translate(0, 0); }
     }
     .credits-overlay {
       position: fixed;
@@ -68,7 +69,7 @@
     .credit-text {
       white-space: pre-line;
       text-align: center;
-      font-size: 1.2em;
+      font-size: 1.6em;
       animation: scrollCredits 15s linear forwards;
       color: white;
     }
@@ -90,116 +91,102 @@
   </style>
 </head>
 <body>
-  <!-- Pantalla de inicio personalizada -->
-  <div id="introScreen" style="position:fixed;inset:0;background:black;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;font-family:sans-serif;">
-    <h1 style="font-size:2.5em;margin-bottom:20px;">🎮 Clicker 🎮</h1>
-    <p>Hecho por: Raphapro900</p>
-    <button onclick="startGame()" style="margin-top:30px;padding:1em 2em;font-size:1.2em;background:#09f;color:white;border:none;border-radius:8px;cursor:pointer;">Comenzar</button>
+  <div id="introScreen" style="position:fixed;inset:0;background:black;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;">
+    <h1 style="font-size:3em;margin-bottom:20px;">🎮 Clicker 🎮</h1>
+    <p style="font-size:1.2em;">Hecho por: Raphapro900</p>
+    <button onclick="startGame()" class="button" style="margin-top:30px;">Empezar a jugar</button>
   </div>
 
-  <!-- Contenedor del juego -->
   <div class="game-container">
     <button class="button" id="clickButton">Click!</button>
     <div class="emblems" id="emblemContainer"></div>
   </div>
 
-  <!-- Créditos cinematográficos -->
   <div class="credits-overlay cinematic-bars" id="creditsOverlay">
     <div class="credit-text" id="creditText"></div>
   </div>
 
-  <!-- Canvas para efectos visuales -->
   <canvas id="confettiCanvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;"></canvas>
 
-  <!-- Audios del juego -->
   <audio id="backgroundMusic" loop src="musica_contador.mp3"></audio>
   <audio id="music1000" src="musica_1000.mp3"></audio>
   <audio id="clickSound" src="click_sound.mp3"></audio>
   <audio id="completeSound" src="emblemas_completos.mp3"></audio>
+
   <script>
-let clickCount = 0;
-let startTime = null;
-let emblemData = [
-  { id: 'emblema1', condition: 'Click 10 veces en 10 segundos' },
-  { id: 'emblema2', condition: 'Alcanza 1000 clicks' },
-  { id: 'emblema3', condition: 'Consigue los 3 emblemas anteriores' }
-];
+    let clickCount = 0;
+    let startTime = null;
+    let emblemData = [
+      { id: 'emblema1', condition: 'Click 10 veces en 10 segundos' },
+      { id: 'emblema2', condition: 'Alcanza 1000 clicks' },
+      { id: 'emblema3', condition: 'Consigue los 3 emblemas' }
+    ];
 
-let emblemsUnlocked = {};
-const clickBtn = document.getElementById("clickButton");
-const emblemContainer = document.getElementById("emblemContainer");
-const backgroundMusic = document.getElementById("backgroundMusic");
-const clickSound = document.getElementById("clickSound");
-const music1000 = document.getElementById("music1000");
-const completeSound = document.getElementById("completeSound");
-const creditsOverlay = document.getElementById("creditsOverlay");
-const creditText = document.getElementById("creditText");
-const confettiCanvas = document.getElementById("confettiCanvas");
-const ctx = confettiCanvas.getContext("2d");
+    let emblemsUnlocked = {};
+    const clickBtn = document.getElementById("clickButton");
+    const emblemContainer = document.getElementById("emblemContainer");
+    const backgroundMusic = document.getElementById("backgroundMusic");
+    const clickSound = document.getElementById("clickSound");
+    const music1000 = document.getElementById("music1000");
+    const completeSound = document.getElementById("completeSound");
+    const creditsOverlay = document.getElementById("creditsOverlay");
+    const creditText = document.getElementById("creditText");
+    const confettiCanvas = document.getElementById("confettiCanvas");
+    const ctx = confettiCanvas.getContext("2d");
 
-function resizeCanvas() {
-  confettiCanvas.width = window.innerWidth;
-  confettiCanvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
+    function startGame() {
+      document.getElementById("introScreen").style.display = "none";
+      startTime = Date.now();
+      backgroundMusic.volume = 0.5;
+      backgroundMusic.play();
+      showEmblems();
+    }
 
-function startGame() {
-  document.getElementById("introScreen").style.display = "none";
-  startTime = Date.now(); // ¡ACTIVA EL CONTADOR!
-  backgroundMusic.volume = 0.5;
-  backgroundMusic.play();
-  showEmblems();
-}
+    function flashAndShake() {
+      document.body.classList.add("yellow-flash", "shake");
+      setTimeout(() => document.body.classList.remove("yellow-flash", "shake"), 300);
+    }
 
-function flashAndShake() {
-  document.body.classList.add("yellow-flash", "shake");
-  setTimeout(() => document.body.classList.remove("yellow-flash", "shake"), 300);
-}
+    function showEmblems() {
+      emblemContainer.innerHTML = '';
+      emblemData.forEach(emblem => {
+        const el = document.createElement('div');
+        el.className = 'emblem';
+        el.textContent = emblemsUnlocked[emblem.id] ? '🏅' : '❓';
+        el.onclick = () => {
+          alert(`Para conseguir este emblema: ${emblem.condition}`);
+          el.remove();
+        };
+        emblemContainer.appendChild(el);
+      });
+    }
 
-function showEmblems() {
-  emblemContainer.innerHTML = '';
-  emblemData.forEach(emblem => {
-    const el = document.createElement('div');
-    el.className = 'emblem';
-    el.textContent = emblemsUnlocked[emblem.id] ? '🏅' : '❓';
-    el.onclick = () => {
-      alert(`Para conseguir este emblema: ${emblem.condition}`);
-      el.remove();
-    };
-    emblemContainer.appendChild(el);
-  });
-}
+    function checkEmblems() {
+      if (clickCount >= 10 && Date.now() - startTime <= 10000 && !emblemsUnlocked['emblema1']) {
+        emblemsUnlocked['emblema1'] = true;
+        flashAndShake();
+        showEmblems();
+      }
+      if (clickCount >= 1000 && !emblemsUnlocked['emblema2']) {
+        emblemsUnlocked['emblema2'] = true;
+        music1000.play();
+        flashAndShake();
+        showEmblems();
+      }
+      if (Object.keys(emblemsUnlocked).length === emblemData.length && !emblemsUnlocked['emblema3']) {
+        emblemsUnlocked['emblema3'] = true;
+        completeSound.play();
+        launchConfetti();
+        setTimeout(showCredits, 1000);
+      }
+    }
 
-function checkEmblems() {
-  if (clickCount >= 10 && Date.now() - startTime <= 10000 && !emblemsUnlocked['emblema1']) {
-    emblemsUnlocked['emblema1'] = true;
-    flashAndShake();
-    showEmblems();
-  }
-  if (clickCount >= 1000 && !emblemsUnlocked['emblema2']) {
-    emblemsUnlocked['emblema2'] = true;
-    music1000.play();
-    flashAndShake();
-    showEmblems();
-  }
-  if (Object.keys(emblemsUnlocked).length >= 2 && !emblemsUnlocked['emblema3']) {
-    emblemsUnlocked['emblema3'] = true;
-    flashAndShake();
-    completeSound.play();
-    launchConfetti();
-    showEmblems();
-    setTimeout(showCredits, 1500);
-  }
-}
-
-function showCredits() {
-  backgroundMusic.pause();
-  creditsOverlay.style.display = "flex";
-  backgroundMusic.playbackRate = 0.7;
-  backgroundMusic.play();
-
-  creditText.innerText = `
+    function showCredits() {
+      backgroundMusic.pause();
+      creditsOverlay.style.display = "flex";
+      backgroundMusic.playbackRate = 0.7;
+      backgroundMusic.play();
+      creditText.innerText = `
 Idea: Raphapro900
 Scripts: Copilot AI
 Web Para Poner Los Scripts: Github
@@ -207,54 +194,26 @@ Musica De Fondo Del Contador: Ezequiel David Urbano
 Musica Cuando Llegas Al Número 1000: Suno AI
 Sonido De Clicks: Raphapro900
 Gracias Por Jugar`;
-
-  setTimeout(() => {
-    creditsOverlay.style.display = "none";
-    backgroundMusic.playbackRate = 1.0;
-    showEmblems();
-  }, 16000);
-}
-
-clickBtn.onclick = () => {
-  if (!startTime) startTime = Date.now();
-  clickCount++;
-  clickSound.play();
-  checkEmblems();
-};
-
-// 🎉 Confeti al desbloquear todo
-let particles = [];
-function launchConfetti() {
-  particles = Array.from({ length: 100 }, () => ({
-    x: Math.random() * confettiCanvas.width,
-    y: -10,
-    r: Math.random() * 6 + 4,
-    d: Math.random() * 10 + 5,
-    color: `hsl(${Math.random() * 360}, 100%, 60%)`,
-    tilt: Math.random() * 10 - 10
-  }));
-  let angle = 0;
-  function draw() {
-    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    angle += 0.01;
-    particles.forEach(p => {
-      p.y += p.d;
-      p.x += Math.sin(angle) * 2;
-      ctx.beginPath();
-      ctx.lineWidth = p.r;
-      ctx.strokeStyle = p.color;
-      ctx.moveTo(p.x + p.tilt, p.y);
-      ctx.lineTo(p.x, p.y + p.tilt);
-      ctx.stroke();
-    });
-    if (particles.some(p => p.y < confettiCanvas.height)) {
-      requestAnimationFrame(draw);
-    } else {
-      ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+      setTimeout(() => {
+        creditsOverlay.style.display = "none";
+        backgroundMusic.playbackRate = 1.0;
+        showEmblems();
+      }, 16000);
     }
-  }
-  draw();
-}
-</script>
-</body>
-</html>
+
+    clickBtn.onclick = () => {
+      if (!startTime) startTime = Date.now();
+      clickCount++;
+      clickSound.play();
+      checkEmblems();
+    };
+
+    function launchConfetti() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
+      const particles = Array.from({ length: 100 }, () => ({
+        x: Math.random() * confettiCanvas.width,
+        y: -10,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * 10 + 5,
+        color: `hsl(${Math.random() * 360}, 100%, 60%)[43dcd9a7-70db-4a1f-b0ae-981daa162054](https://github.com/karames/curso-markdown-master/tree/9a65a17dd637e2be8fee24d6ea6c5558403d5487/markdown%2F100-codigo-fuente.md?citationMarker=43dcd9a7-70db-4a1f-b0ae-981daa162054 "1")
