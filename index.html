@@ -136,6 +136,7 @@
   </video>
 
   <script>
+    <!-- BLOQUE 3/6 -->
     let contador = 0;
     let juegoActivo = false;
     let clickActual = 0;
@@ -144,7 +145,7 @@
     let tiempoPaciencia = null;
     let esperaPaciencia = null;
     let emblemasObtenidos = {};
-    const totalEmblemas = 8; // ahora hay 8 emblemas incluyendo el demoníaco
+    const totalEmblemas = 8;
     let temporizadorMetaSuprema = null;
 
     let antesDelClick = 0;
@@ -160,6 +161,19 @@
     const video666 = document.getElementById("video666");
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
+
+    const click1 = document.getElementById("click1");
+    const click2 = document.getElementById("click2");
+    const click3 = document.getElementById("click3");
+    const click4 = document.getElementById("click4");
+    const click5 = document.getElementById("click5");
+    const click6 = document.getElementById("click6");
+    const click7 = document.getElementById("click7");
+    const click8 = document.getElementById("click8");
+
+    const musicaFondo = document.getElementById("musicaFondo");
+    const musicaVictoria = document.getElementById("musicaVictoria");
+    const sonidoFinal = document.getElementById("sonidoFinal");
 
     const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, click8];
 
@@ -188,7 +202,6 @@
 
       antesDelClick = contador;
 
-      // Salto especial: si estás en 660, pasás a 666 directamente
       if (contador === 660) {
         contador += 6;
       } else {
@@ -224,7 +237,6 @@
         esperaPaciencia = null;
       }
 
-      // Evento especial demoníaco
       if (antesDelClick === 660 && contador === 666 && !evento666Activado) {
         evento666Activado = true;
         musicaInterrumpida = true;
@@ -232,7 +244,6 @@
         document.body.style.backgroundColor = "darkred";
         activarEvento666();
 
-        // Final oculto si se queda en 666 sin avanzar
         setTimeout(() => {
           if (contador === 666) {
             mostrarFinal666();
@@ -240,7 +251,6 @@
         }, 15000);
       }
 
-      // Restaurar fondo/música si pasa de 666
       if (evento666Activado && contador > 666) {
         if (musicaInterrumpida) {
           document.body.style.backgroundColor = "black";
@@ -400,7 +410,8 @@
         panelEmblemas.style.display === "block" ? "none" : "block";
       actualizarPanelEmblemas();
         }
-      function reiniciar(e) {
+    <!-- BLOQUE 5/6 -->
+    function reiniciar(e) {
       e.stopPropagation();
       contador = 0;
       clickActual = 0;
@@ -468,6 +479,7 @@
 
       animar();
     }
+    <!-- BLOQUE 6/6 -->
   </script>
 </body>
 </html>
