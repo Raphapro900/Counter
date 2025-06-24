@@ -128,11 +128,12 @@
     let tiempoPaciencia = null;
     let esperaPaciencia = null;
     let emblemasObtenidos = {};
+    const totalEmblemas = 8;
+    let temporizadorMetaSuprema = null;
+
     let antesDelClick = 0;
     let evento666Activado = false;
     let musicaInterrumpida = false;
-    let temporizadorMetaSuprema = null;
-    const totalEmblemas = 8; // ahora son 8, incluyendo el demoníaco
 
     const numero = document.getElementById("numero");
     const mensaje = document.getElementById("mensajeVictoria");
@@ -200,6 +201,7 @@
         esperaPaciencia = null;
       }
 
+      // Evento demoníaco
       if (antesDelClick === 660 && contador === 666 && !evento666Activado) {
         evento666Activado = true;
         musicaInterrumpida = true;
@@ -419,7 +421,7 @@
       }
 
       animar();
-    }
+        }
     </script>
 </body>
 </html>
