@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <title>Contador Raphástico</title>
+
+  <!-- Fuentes Google: principal y sangrienta -->
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Creepster&display=swap" rel="stylesheet" />
+
   <style>
     body {
       margin: 0;
@@ -20,13 +23,16 @@
       user-select: none;
       transition: background 0.5s;
     }
+
     .oculto { display: none; }
     .blur { filter: blur(5px); transition: filter 0.3s; }
     .temblor { animation: temblor 0.3s; }
     .rojo { background-color: red !important; }
     .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
+
     #numero { margin-bottom: 30px; }
+
     #mensajeVictoria {
       position: absolute;
       top: 20%;
@@ -36,6 +42,7 @@
       animation: parpadeo 1s infinite;
       z-index: 10;
     }
+
     #emblemasVitrina {
       position: fixed;
       bottom: 10px;
@@ -46,6 +53,7 @@
       flex-wrap: wrap;
       z-index: 5;
     }
+
     #notificacionEmblema {
       position: fixed;
       bottom: 10px;
@@ -60,6 +68,7 @@
       animation: fadeout 3s ease-out forwards;
       z-index: 10;
     }
+
     #botonVerEmblemas {
       position: fixed;
       top: 10px;
@@ -73,6 +82,7 @@
       cursor: pointer;
       z-index: 10;
     }
+
     #panelEmblemas {
       position: fixed;
       top: 60px;
@@ -88,27 +98,32 @@
       z-index: 9;
       border: 1px solid white;
     }
+
     @keyframes parpadeo {
       0%,100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.5; transform: scale(1.1); }
     }
+
     @keyframes vibrar {
       0%,100% { transform: translate(0,0); }
       25% { transform: translate(3px,-3px); }
       50% { transform: translate(-3px,3px); }
       75% { transform: translate(3px,3px); }
     }
+
     @keyframes temblor {
       0%,100% { transform: translate(0,0); }
       25% { transform: translate(4px,-4px); }
       50% { transform: translate(-4px,4px); }
       75% { transform: translate(4px,4px); }
     }
+
     @keyframes fadeout {
       0% { opacity: 1; }
       75% { opacity: 1; }
       100% { opacity: 0; display: none; }
     }
+
     button {
       font-family: 'Bebas Neue', sans-serif;
       font-size: 30px;
@@ -120,6 +135,7 @@
       cursor: pointer;
       z-index: 1;
     }
+
     canvas {
       position: fixed;
       top: 0;
@@ -132,19 +148,24 @@
 <body>
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
+
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
   <button id="botonVerEmblemas" onclick="mostrarOcultarPanel()">Emblemas</button>
+
   <div id="panelEmblemas"></div>
   <div id="notificacionEmblema"></div>
   <div id="emblemasVitrina"></div>
 
-  <!-- Audios -->
+  <!-- Audios principales -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
   <audio id="sonidoEmblema" src="emblema.mp3" preload="auto"></audio>
   <audio id="sonidoMisterio" src="misterio.mp3" preload="auto"></audio>
+  <audio id="sonidoCompletos" src="emblemas_completos.mp3" preload="auto"></audio>
+
+  <!-- Sonidos de clic -->
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
   <audio id="click3" src="click3.mp3" preload="auto"></audio>
@@ -154,8 +175,10 @@
   <audio id="click7" src="click7.mp3" preload="auto"></audio>
   <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
-  <!-- Canvas y video -->
+  <!-- Canvas para confeti -->
   <canvas id="confetiCanvas"></canvas>
+
+  <!-- Video del evento 666 -->
   <video id="video666" class="oculto">
     <source src="video666.mp4" type="video/mp4" />
   </video>
@@ -189,6 +212,7 @@ const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, cl
 const musicaFondo = document.getElementById("musicaFondo");
 const musicaVictoria = document.getElementById("musicaVictoria");
 const sonidoFinal = document.getElementById("sonidoFinal");
+const sonidoCompleto = document.getElementById("sonidoCompletos");
 
 const listaEmblemas = [
   "🥇 Medalla de Bronce",
@@ -215,14 +239,13 @@ function contar() {
 
   const antesDelClick = contador;
 
-  // Salto de 660 a 666
   if (contador === 660) {
     contador += 6;
   } else if (contador === 666 && !evento666Activado) {
-    // Si el jugador no esperó, se salta a 670
     evento666Activado = true;
     contador = 670;
     numero.textContent = contador;
+    if (!musicaFondo.paused) musicaFondo.play().catch(() => {});
     return;
   } else {
     contador += 10;
@@ -252,7 +275,7 @@ function contar() {
     tiempoPaciencia = Date.now();
     esperaPaciencia = setTimeout(() => {
       if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
-    }, 180000);
+    }, 33000);
   } else if (contador !== 300) {
     clearTimeout(esperaPaciencia);
     esperaPaciencia = null;
@@ -271,6 +294,10 @@ function contar() {
         mostrarVideo666();
       }
     }, 15000);
+  }
+
+  if (contador === 670 && evento666Activado) {
+    musicaFondo.play().catch(() => {});
   }
 
   if (contador === 1000) {
@@ -313,11 +340,11 @@ function contar() {
   }
   if (cantidad === totalEmblemas && !emblemaFinalDesbloqueado) {
     emblemaFinalDesbloqueado = true;
-    const s1 = sonido.cloneNode();
-    const s2 = sonidoFinal.cloneNode();
-    s1.playbackRate = 2.0;
-    s2.playbackRate = 2.0;
-    s1.play(); s2.play();
+
+    const s = document.getElementById("sonidoCompletos");
+    s.currentTime = 0;
+    s.play();
+
     lanzarConfeti();
     noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
     noti.style.display = "block";
@@ -360,36 +387,35 @@ function mostrarVideo666() {
     video.onended = () => {
       video.pause();
       video.classList.add("oculto");
-
       document.body.style.backgroundColor = "black";
 
-      const textoFinal = document.createElement("div");
-      textoFinal.id = "mensaje666";
-      textoFinal.innerHTML = "<em>Haz cerrado la puerta al infierno, te encontramos por suerte aquí</em>";
-      Object.assign(textoFinal.style, {
+      const imagenFinal = document.createElement("img");
+      imagenFinal.src = "final666.png"; // Asegurate de tener esta imagen
+      imagenFinal.alt = "Mensaje final";
+      Object.assign(imagenFinal.style, {
         position: "fixed",
-        top: "38%",
-        left: "0",
-        width: "100%",
-        textAlign: "center",
-        fontSize: "2em",
-        color: "red",
-        fontFamily: "'Creepster', cursive",
-        letterSpacing: "2px",
-        textShadow: "0 0 12px darkred",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        maxWidth: "90vw",
+        maxHeight: "90vh",
+        zIndex: "999",
         opacity: "0",
-        transition: "opacity 2s",
-        zIndex: "999"
+        transition: "opacity 2s ease-in-out"
       });
 
-      document.body.appendChild(textoFinal);
+      document.body.appendChild(imagenFinal);
+
       const sonido = document.getElementById("sonidoMisterio");
       sonido.currentTime = 0;
       sonido.play();
-      setTimeout(() => textoFinal.style.opacity = "1", 100);
 
       setTimeout(() => {
-        textoFinal.remove();
+        imagenFinal.style.opacity = "1";
+      }, 100);
+
+      setTimeout(() => {
+        imagenFinal.remove();
         numero.textContent = "670";
         contador = 670;
         if (!musicaInterrumpida) musicaFondo.play().catch(() => {});
@@ -401,20 +427,27 @@ function mostrarVideo666() {
   e.stopPropagation();
   contador = 0;
   numero.textContent = contador;
+
   document.body.classList.remove("victoria", "ritmo");
   mensaje.classList.add("oculto");
+
   musicaVictoria.pause();
   musicaVictoria.currentTime = 0;
   musicaFondo.currentTime = 0;
   musicaFondo.play();
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   btnReiniciar.classList.add("oculto");
   tiempoClickRapido = [];
+
   clearTimeout(esperaPaciencia);
   esperaPaciencia = null;
-  juegoActivo = true;
+
   evento666Activado = false;
   evento666EnProgreso = false;
+  musicaInterrumpida = false;
+
+  juegoActivo = true;
   numero.classList.remove("oculto");
 }
 
