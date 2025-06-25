@@ -177,7 +177,62 @@
   </video>
 
   <script>
-    function contar() {
+    let contador = 0;
+let juegoActivo = false;
+let clickActual = 0;
+let tiempoClickRapido = [];
+let victorias = 0;
+let tiempoPaciencia = null;
+let esperaPaciencia = null;
+let emblemasObtenidos = {};
+let emblemaFinalDesbloqueado = false;
+const totalEmblemas = 7;
+
+let evento666Activado = false;
+let evento666EnProgreso = false;
+let musicaInterrumpida = false;
+
+// Elementos del DOM
+const numero = document.getElementById("numero");
+const mensaje = document.getElementById("mensajeVictoria");
+const btnEmpezar = document.getElementById("empezar");
+const btnReiniciar = document.getElementById("reiniciar");
+const panelEmblemas = document.getElementById("panelEmblemas");
+const cuenta = document.getElementById("cuentaRegresiva");
+
+const canvas = document.getElementById("confetiCanvas");
+const ctx = canvas.getContext("2d");
+
+const sonidosClick = [
+  click1, click2, click3, click4,
+  click5, click6, click7, click8
+];
+const musicaFondo = document.getElementById("musicaFondo");
+const musica666 = document.getElementById("musica666");
+const musicaVictoria = document.getElementById("musicaVictoria");
+const sonidoFinal = document.getElementById("sonidoFinal");
+
+const listaEmblemas = [
+  "🥇 Medalla de Bronce",
+  "⚡ Velocidad Loca",
+  "💎 Diamante Triple",
+  "🎮 Casi Casi Gamer",
+  "🕒 Paciencia Infinita",
+  "🏁 Meta Suprema",
+  "👹 No Confíes En 666"
+];
+
+function iniciarJuego() {
+  btnEmpezar.classList.add("oculto");
+  numero.classList.remove("oculto");
+  juegoActivo = true;
+  musicaFondo.currentTime = 0;
+  musicaFondo.play().catch(() => {});
+  document.body.addEventListener("click", contar);
+  actualizarPanelEmblemas();
+}
+
+function contar() {
   if (!juegoActivo || contador >= 1000) return;
 
   if (contador === 660) {
@@ -188,14 +243,11 @@
       musicaInterrumpida = true;
 
       musicaFondo.pause();
-      const musica666 = document.getElementById("musica666");
       musica666.currentTime = 0;
       musica666.play().catch(() => {});
-      window.musica666 = musica666;
 
       document.body.style.backgroundColor = "darkred";
 
-      const cuenta = document.getElementById("cuentaRegresiva");
       cuenta.textContent = "5";
       cuenta.classList.remove("oculto");
 
@@ -203,7 +255,6 @@
       const intervalo = setInterval(() => {
         segundos--;
         cuenta.textContent = segundos.toString();
-
         if (segundos <= 0) {
           clearInterval(intervalo);
           cuenta.classList.add("oculto");
@@ -217,12 +268,10 @@
       return;
     }
 
-    // Si el jugador hace clic antes de los 5 segundos
     if (!evento666Activado && evento666EnProgreso) {
       clearInterval(window.intervaloCuenta);
-      const cuenta = document.getElementById("cuentaRegresiva");
       cuenta.classList.add("oculto");
-      if (window.musica666) window.musica666.pause();
+      musica666.pause();
 
       evento666Activado = true;
       contador = 670;
