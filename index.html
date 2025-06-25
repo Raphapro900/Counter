@@ -4,7 +4,154 @@
   <meta charset="UTF-8" />
   <title>Contador Raphástico</title>
 
-  <!-- Fuentes Google: principal y sangrienta -->
+  <!-- Fuentes Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Creepster&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      transition: background 0.5s;
+    }
+
+    .oculto { display: none; }
+    .blur { filter: blur(5px); transition: filter 0.3s; }
+    .temblor { animation: temblor 0.3s; }
+    .rojo { background-color: red !important; }
+    .victoria { background-color: #00cc00 !important; color: black; }
+    .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
+
+    #numero { margin-bottom: 30px; }
+
+    #mensajeVictoria {
+      position: absolute;
+      top: 20%;
+      font-size: 80px;
+      color: yellow;
+      text-shadow: 4px 4px 0 black;
+      animation: parpadeo 1s infinite;
+      z-index: 10;
+    }
+
+    #emblemasVitrina {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 26px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      z-index: 5;
+    }
+
+    #notificacionEmblema {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      font-size: 22px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      color: gold;
+      border: 2px solid gold;
+      border-radius: 10px;
+      display: none;
+      animation: fadeout 3s ease-out forwards;
+      z-index: 10;
+    }
+
+    #botonVerEmblemas {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      background: white;
+      color: black;
+      padding: 5px 15px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    #panelEmblemas {
+      position: fixed;
+      top: 60px;
+      right: 10px;
+      background: rgba(0,0,0,0.9);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 18px;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+      z-index: 9;
+      border: 1px solid white;
+    }
+
+    @keyframes parpadeo {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+
+    @keyframes vibrar {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(3px,-3px); }
+      50% { transform: translate(-3px,3px); }
+      75% { transform: translate(3px,3px); }
+    }
+
+    @keyframes temblor {
+      0%,100% { transform: translate(0,0); }
+      25% { transform: translate(4px,-4px); }
+      50% { transform: translate(-4px,4px); }
+      75% { transform: translate(4px,4px); }
+    }
+
+    @keyframes fadeout {
+      0% { opacity: 1; }
+      75% { opacity: 1; }
+      100% { opacity: 0; display: none; }
+    }
+
+    button {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 30px;
+      padding: 10px 40px;
+      border: none;
+      border-radius: 12px;
+      background: white;
+      color: black;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Contador Raphástico</title>
+
+  <!-- Fuentes Google -->
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Creepster&display=swap" rel="stylesheet" />
 
   <style>
@@ -237,22 +384,54 @@ function iniciarJuego() {
 function contar() {
   if (!juegoActivo || contador >= 1000) return;
 
-  const antesDelClick = contador;
+  const antes = contador;
 
+  // Click especial en 660 para saltar a 666
   if (contador === 660) {
     contador += 6;
-  } else if (contador === 666 && !evento666Activado) {
-    evento666Activado = true;
-    contador = 670;
-    numero.textContent = contador;
-    if (!musicaFondo.paused) musicaFondo.play().catch(() => {});
-    return;
+  } else if (contador === 666) {
+    // Si aún no se activó el evento ni pasaron 5 segundos
+    if (!evento666EnProgreso && !evento666Activado) {
+      evento666EnProgreso = true;
+      musicaInterrumpida = true;
+
+      // Efecto scratch
+      const scratch = setInterval(() => {
+        if (musicaFondo.playbackRate > 0.1) {
+          musicaFondo.playbackRate -= 0.1;
+        } else {
+          clearInterval(scratch);
+          musicaFondo.pause();
+          musicaFondo.playbackRate = 1;
+        }
+      }, 50);
+
+      document.body.style.backgroundColor = "darkred";
+
+      setTimeout(() => {
+        if (contador === 666 && !evento666Activado) {
+          evento666Activado = true;
+          mostrarVideo666(); // Emblema se da al finalizar el video
+        }
+      }, 5000);
+      return;
+    }
+
+    // Si hace clic antes de 5s: salta el evento
+    if (!evento666Activado && evento666EnProgreso) {
+      evento666Activado = true;
+      contador = 670;
+      numero.textContent = contador;
+      musicaFondo.play().catch(() => {});
+      return;
+    }
   } else {
     contador += 10;
   }
 
   numero.textContent = contador;
 
+  // Estética de clic
   document.body.classList.add("temblor", "rojo", "blur");
   setTimeout(() => {
     document.body.classList.remove("temblor", "rojo", "blur");
@@ -263,6 +442,7 @@ function contar() {
   sonido.play();
   clickActual = (clickActual + 1) % sonidosClick.length;
 
+  // Emblema por velocidad: 5 clics en 7s
   const ahora = Date.now();
   tiempoClickRapido.push(ahora);
   tiempoClickRapido = tiempoClickRapido.filter(t => ahora - t < 7000);
@@ -279,21 +459,6 @@ function contar() {
   } else if (contador !== 300) {
     clearTimeout(esperaPaciencia);
     esperaPaciencia = null;
-  }
-
-  if (contador === 666 && !evento666EnProgreso) {
-    evento666EnProgreso = true;
-    musicaInterrumpida = true;
-    musicaFondo.pause();
-    document.body.style.backgroundColor = "darkred";
-
-    setTimeout(() => {
-      if (contador === 666 && !evento666Activado) {
-        evento666Activado = true;
-        desbloquearEmblema("👹 No Confíes En 666");
-        mostrarVideo666();
-      }
-    }, 15000);
   }
 
   if (contador === 670 && evento666Activado) {
@@ -320,6 +485,12 @@ function contar() {
   const vitrina = document.getElementById("emblemasVitrina");
   const insignia = document.createElement("div");
   insignia.textContent = nombre;
+
+  if (nombre === "👹 No Confíes En 666") {
+    insignia.style.color = "red";
+    insignia.style.textShadow = "0 0 5px darkred";
+  }
+
   vitrina.appendChild(insignia);
 
   const noti = document.getElementById("notificacionEmblema");
@@ -338,6 +509,7 @@ function contar() {
   if (cantidad === totalEmblemas - 1 && !emblemaFinalDesbloqueado && nombre !== "🏁 Meta Suprema") {
     desbloquearEmblema("🏁 Meta Suprema");
   }
+
   if (cantidad === totalEmblemas && !emblemaFinalDesbloqueado) {
     emblemaFinalDesbloqueado = true;
 
@@ -389,8 +561,10 @@ function mostrarVideo666() {
       video.classList.add("oculto");
       document.body.style.backgroundColor = "black";
 
+      desbloquearEmblema("👹 No Confíes En 666");
+
       const imagenFinal = document.createElement("img");
-      imagenFinal.src = "final666.png"; // Asegurate de tener esta imagen
+      imagenFinal.src = "final666.png";
       imagenFinal.alt = "Mensaje final";
       Object.assign(imagenFinal.style, {
         position: "fixed",
