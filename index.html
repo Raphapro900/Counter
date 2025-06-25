@@ -140,7 +140,7 @@
 </head>
 <body>
   <div id="numero" class="oculto">0</div>
-  <div id="cuentaRegresiva" class="oculto" style="font-size:40px; color:orangered; text-shadow:1px 1px 4px black;">5</div>
+  <div id="cuentaRegresiva" class="oculto">5</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
 
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
@@ -149,11 +149,9 @@
 
   <div id="panelEmblemas"></div>
   <div id="notificacionEmblema"></div>
+  <div id="emblemasVitrina"></div>
 
-  <!-- Panel inferior fijo de emblemas -->
-  <div id="emblemasVitrina" style="position:fixed; bottom:0; left:0; right:0; background:rgba(0,0,0,0.7); padding:10px; display:flex; flex-wrap:wrap; justify-content:center; gap:10px; font-size:20px; z-index:5;"></div>
-
-  <!-- Audios principales -->
+  <!-- Audios -->
   <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
   <audio id="musica666" src="musica666.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
@@ -162,7 +160,6 @@
   <audio id="sonidoMisterio" src="misterio.mp3" preload="auto"></audio>
   <audio id="sonidoCompletos" src="emblemas_completos.mp3" preload="auto"></audio>
 
-  <!-- Sonidos de clic -->
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
   <audio id="click3" src="click3.mp3" preload="auto"></audio>
@@ -172,7 +169,6 @@
   <audio id="click7" src="click7.mp3" preload="auto"></audio>
   <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
-  <!-- Canvas de confeti -->
   <canvas id="confetiCanvas"></canvas>
 
   <!-- Video del evento 666 -->
@@ -221,9 +217,11 @@
       return;
     }
 
+    // Si el jugador hace clic antes de los 5 segundos
     if (!evento666Activado && evento666EnProgreso) {
       clearInterval(window.intervaloCuenta);
-      document.getElementById("cuentaRegresiva").classList.add("oculto");
+      const cuenta = document.getElementById("cuentaRegresiva");
+      cuenta.classList.add("oculto");
       if (window.musica666) window.musica666.pause();
 
       evento666Activado = true;
@@ -307,7 +305,6 @@
   noti.style.animation = "fadeout 3s ease-out forwards";
 
   const sonido = document.getElementById("sonidoEmblema");
-  sonido.playbackRate = 1;
   sonido.currentTime = 0;
   sonido.play();
 
@@ -318,15 +315,12 @@
 
   if (cantidad === totalEmblemas && !emblemaFinalDesbloqueado) {
     emblemaFinalDesbloqueado = true;
-
     const s = document.getElementById("sonidoCompletos");
     s.currentTime = 0;
     s.play();
 
     lanzarConfeti();
     noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
-    noti.style.display = "block";
-    noti.style.animation = "none";
     void noti.offsetWidth;
     noti.style.animation = "fadeout 3s ease-out forwards";
   }
@@ -352,26 +346,26 @@ function mostrarOcultarPanel() {
 function mostrarVideo666() {
   const video = document.getElementById("video666");
   video.classList.remove("oculto");
-  video.style.position = "fixed";
-  video.style.top = "0";
-  video.style.left = "0";
-  video.style.width = "100vw";
-  video.style.height = "100vh";
-  video.style.zIndex = "1000";
-  video.style.objectFit = "cover";
+  Object.assign(video.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100vw",
+    height: "100vh",
+    zIndex: "1000",
+    objectFit: "cover"
+  });
 
   musicaFondo.pause();
   if (window.musica666) musica666.pause();
 
   video.play();
   video.onended = () => {
-    video.pause();
     video.classList.add("oculto");
     document.body.style.backgroundColor = "black";
 
     const imagenFinal = document.createElement("img");
     imagenFinal.src = "final666.png";
-    imagenFinal.alt = "Mensaje final";
     Object.assign(imagenFinal.style, {
       position: "fixed",
       top: "50%",
@@ -459,7 +453,6 @@ function lanzarConfeti() {
       ctx.moveTo(c.x + c.tilt, c.y);
       ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
       ctx.stroke();
-
       c.y += 4;
       c.tiltAngle += 0.1;
       c.tilt = Math.sin(c.tiltAngle) * 10;
