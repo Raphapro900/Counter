@@ -83,33 +83,55 @@
       cursor: pointer;
       z-index: 10;
     }
-    #botonResetEmblemas {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      font-size: 20px;
-      background: crimson;
-      color: white;
-      padding: 5px 15px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      z-index: 10;
-    }
     #panelEmblemas {
       position: fixed;
       top: 60px;
       right: 10px;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.95);
       color: white;
       padding: 15px;
       border-radius: 10px;
       font-size: 18px;
-      max-height: 300px;
+      max-height: 80vh;
       overflow-y: auto;
       display: none;
       z-index: 9;
       border: 1px solid white;
+      width: 300px;
+    }
+    #listaEmblemas {
+      margin-bottom: 20px;
+    }
+    #panelConfiguracion {
+      border-top: 1px solid white;
+      padding-top: 10px;
+    }
+    .configItem {
+      margin-bottom: 15px;
+    }
+    .configItem label {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+    .configItem input[type="range"] {
+      width: 100%;
+    }
+    .configItem button {
+      font-size: 16px;
+      padding: 5px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .encendido {
+      background: limegreen;
+      color: black;
+    }
+    .apagado {
+      background: crimson;
+      color: white;
     }
     @keyframes parpadeo {
       0%,100% { opacity: 1; transform: scale(1); }
@@ -167,9 +189,28 @@
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
   <button id="botonVerEmblemas" onclick="mostrarOcultarPanel()">Emblemas</button>
-  <button id="botonResetEmblemas" onclick="reiniciarEmblemas()">Reiniciar emblemas</button>
 
-  <div id="panelEmblemas"></div>
+  <div id="panelEmblemas">
+    <div id="listaEmblemas"></div>
+    <div id="panelConfiguracion">
+      <div class="configItem">
+        <label for="volumenMusica">Volumen de Música:</label>
+        <input type="range" id="volumenMusica" min="0" max="1" step="0.01" value="1" />
+      </div>
+      <div class="configItem">
+        <label for="volumenSFX">Volumen de SFX:</label>
+        <input type="range" id="volumenSFX" min="0" max="1" step="0.01" value="1" />
+      </div>
+      <div class="configItem">
+        <label>Desenfoque de Cámara:</label>
+        <button id="botonBlur" class="encendido" onclick="toggleBlur()">Encendido</button>
+      </div>
+      <div class="configItem">
+        <button onclick="reiniciarEmblemas()">🔁 Reiniciar emblemas</button>
+      </div>
+    </div>
+  </div>
+
   <div id="notificacionEmblema"></div>
   <div id="emblemasVitrina"></div>
 
@@ -203,6 +244,7 @@
   <script>
 let contador = 0;
 let juegoActivo = false;
+let desenfoqueActivo = true;
 let clickActual = 0;
 let tiempoClickRapido = [];
 let victorias = 0;
@@ -223,6 +265,7 @@ const panelEmblemas = document.getElementById("panelEmblemas");
 const cuenta = document.getElementById("cuentaRegresiva");
 const canvas = document.getElementById("confetiCanvas");
 const ctx = canvas.getContext("2d");
+const botonBlur = document.getElementById("botonBlur");
 
 const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, click8];
 const musicaFondo = document.getElementById("musicaFondo");
@@ -246,117 +289,53 @@ function iniciarJuego() {
   btnEmpezar.classList.add("oculto");
   numero.classList.remove("oculto");
   juegoActivo = true;
+  musicaFondo.volume = parseFloat(volumenMusica.value);
   musicaFondo.currentTime = 0;
   musicaFondo.play().catch(() => {});
   document.body.addEventListener("click", contar);
   cargarEmblemas();
   actualizarPanelEmblemas();
+  aplicarDesenfoque();
 }
 
-function contar() {
-  if (!juegoActivo || contador >= 1000) return;
+function mostrarOcultarPanel() {
+  panelEmblemas.style.display =
+    panelEmblemas.style.display === "block" ? "none" : "block";
+  if (panelEmblemas.style.display === "block") actualizarPanelEmblemas();
+}
 
-  if (contador === 660) {
-    contador += 6;
-  } else if (contador === 666 && !evento666Activado) {
-    evento666Activado = true;
-    musicaInterrumpida = true;
-    musicaFondo.pause();
-    musica666.currentTime = 0;
-    musica666.play().catch(() => {});
-    document.body.style.backgroundColor = "darkred";
-
-    setTimeout(() => {
-      musica666.pause();
-      mostrarVideo666();
-    }, 5000);
-    return;
-  } else {
-    contador += 10;
-  }
-
-  numero.textContent = contador;
-
-  document.body.classList.add("temblor", "rojo", "blur");
-  setTimeout(() => {
-    document.body.classList.remove("temblor", "rojo", "blur");
-  }, 200);
-
-  const sonido = sonidosClick[clickActual];
+function toggleBlur() {
+  desenfoqueActivo = !desenfoqueActivo;
+  aplicarDesenfoque();
+  const sonido = desenfoqueActivo ? click1 : click8;
   sonido.currentTime = 0;
+  sonido.volume = parseFloat(volumenSFX.value);
   sonido.play();
-  clickActual = (clickActual + 1) % sonidosClick.length;
 
-  const ahora = Date.now();
-  tiempoClickRapido.push(ahora);
-  tiempoClickRapido = tiempoClickRapido.filter(t => ahora - t < 7000);
-  if (tiempoClickRapido.length >= 5) desbloquearEmblema("⚡ Velocidad Loca");
-
-  if (contador === 100) desbloquearEmblema("🥇 Medalla de Bronce");
-  if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
-
-  if (contador === 300 && !esperaPaciencia) {
-    tiempoPaciencia = Date.now();
-    esperaPaciencia = setTimeout(() => {
-      if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
-    }, 33000);
-  } else if (contador !== 300) {
-    clearTimeout(esperaPaciencia);
-    esperaPaciencia = null;
-  }
-
-  if (contador === 1000) {
-    sonidoFinal.play();
-    musicaFondo.pause();
-    musicaVictoria.currentTime = 0;
-    musicaVictoria.play();
-    document.body.classList.add("victoria", "ritmo");
-    mensaje.classList.remove("oculto");
-    btnReiniciar.classList.remove("oculto");
-    lanzarConfeti();
-    victorias++;
-    if (victorias === 3) desbloquearEmblema("💎 Diamante Triple");
-  }
+  botonBlur.textContent = desenfoqueActivo ? "Encendido" : "Apagado";
+  botonBlur.className = desenfoqueActivo ? "encendido" : "apagado";
 }
 
-function desbloquearEmblema(nombre) {
-  if (emblemasObtenidos[nombre]) return;
-  emblemasObtenidos[nombre] = true;
-  guardarEmblemas();
-
-  const vitrina = document.getElementById("emblemasVitrina");
-  const insignia = document.createElement("div");
-  insignia.textContent = nombre;
-  if (nombre === "👹 No Confíes En 666") {
-    insignia.style.color = "red";
-    insignia.style.textShadow = "0 0 5px darkred";
-  }
-  vitrina.appendChild(insignia);
-
-  const noti = document.getElementById("notificacionEmblema");
-  noti.textContent = `🏆 Emblema desbloqueado: ${nombre}`;
-  noti.style.display = "block";
-  noti.style.animation = "none";
-  void noti.offsetWidth;
-  noti.style.animation = "fadeout 3s ease-out forwards";
-
-  const cantidad = Object.keys(emblemasObtenidos).length;
-  if (cantidad === totalEmblemas) {
-    if (!emblemaFinalDesbloqueado) {
-      emblemaFinalDesbloqueado = true;
-      sonidoCompletos.currentTime = 0;
-      sonidoCompletos.play();
-      document.body.classList.add("temblorGlobal");
-      lanzarConfeti();
-      noti.textContent = "🎉 ¡Todos los emblemas desbloqueados!";
-    }
+function aplicarDesenfoque() {
+  if (desenfoqueActivo) {
+    document.body.classList.add("blur");
   } else {
-    sonidoEmblema.currentTime = 0;
-    sonidoEmblema.play();
+    document.body.classList.remove("blur");
   }
-
-  actualizarPanelEmblemas();
 }
+
+volumenMusica.addEventListener("input", () => {
+  musicaFondo.volume = parseFloat(volumenMusica.value);
+  musica666.volume = parseFloat(volumenMusica.value);
+  musicaVictoria.volume = parseFloat(volumenMusica.value);
+});
+
+volumenSFX.addEventListener("input", () => {
+  sonidosClick.forEach(s => s.volume = parseFloat(volumenSFX.value));
+  sonidoFinal.volume = parseFloat(volumenSFX.value);
+  sonidoEmblema.volume = parseFloat(volumenSFX.value);
+  sonidoCompletos.volume = parseFloat(volumenSFX.value);
+});
 
 function guardarEmblemas() {
   document.cookie = "emblemas=" + JSON.stringify(emblemasObtenidos) + "; path=/; max-age=31536000";
@@ -418,6 +397,7 @@ function mostrarVideo666() {
     document.body.appendChild(imagenFinal);
     const sonido = document.getElementById("sonidoMisterio");
     sonido.currentTime = 0;
+    sonido.volume = parseFloat(volumenSFX.value);
     sonido.play();
 
     setTimeout(() => {
@@ -447,6 +427,7 @@ function reiniciar(e) {
   musicaVictoria.pause();
   musicaVictoria.currentTime = 0;
   musicaFondo.currentTime = 0;
+  musicaFondo.volume = parseFloat(volumenMusica.value);
   musicaFondo.play();
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -461,6 +442,8 @@ function reiniciar(e) {
 
   numero.classList.remove("oculto");
   juegoActivo = true;
+
+  aplicarDesenfoque();
 }
 
 function lanzarConfeti() {
