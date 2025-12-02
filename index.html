@@ -19,6 +19,9 @@
       overflow: hidden;
       user-select: none;
       transition: background 0.5s;
+      /* 👇 Esto asegura que el body reciba clics y toques */
+      cursor: pointer;
+      touch-action: manipulation;
     }
     .oculto { display: none; }
     .temblor { animation: temblor 0.3s; }
@@ -34,62 +37,7 @@
       animation: parpadeo 1s infinite;
       z-index: 10;
     }
-    #emblemasVitrina {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-      display: flex; flex-wrap: wrap;
-      justify-content: center; gap: 10px;
-      font-size: 20px; z-index: 5;
-    }
-    #notificacionEmblema {
-      position: fixed; bottom: 10px; left: 10px;
-      font-size: 22px; padding: 10px 20px;
-      background: rgba(255,255,255,0.1);
-      color: gold; border: 2px solid gold;
-      border-radius: 10px; display: none;
-      animation: fadeout 3s ease-out forwards;
-      z-index: 10;
-    }
-    #botonConfiguracion {
-      position: fixed; top: 10px; left: 10px;
-      font-size: 24px; background: white; color: black;
-      padding: 5px 15px; border-radius: 10px;
-      border: none; cursor: pointer; z-index: 10;
-    }
-    #botonVerEmblemas {
-      position: fixed; top: 10px; right: 10px;
-      font-size: 20px; background: white; color: black;
-      padding: 5px 15px; border-radius: 10px;
-      border: none; cursor: pointer; z-index: 10;
-    }
-    #panelEmblemas {
-      position: fixed; top: 60px; right: 10px;
-      background: rgba(0,0,0,0.95); color: white;
-      padding: 15px; border-radius: 10px;
-      font-size: 18px; max-height: 80vh;
-      overflow-y: auto; display: none;
-      z-index: 9; border: 1px solid white;
-      width: 300px;
-    }
-    #listaEmblemas { margin-bottom: 20px; }
-    #panelConfiguracion { border-top: 1px solid white; padding-top: 10px; }
-    .configItem { margin-bottom: 15px; }
-    .configItem label { display: block; font-size: 16px; margin-bottom: 5px; }
-    .configItem input[type="range"] { width: 100%; }
-    .configItem button {
-      font-size: 16px; padding: 5px 15px;
-      background: crimson; color: white;
-      border: none; border-radius: 8px;
-      cursor: pointer; width: 100%;
-    }
-    @keyframes parpadeo { 0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(1.1);} }
-    @keyframes vibrar { 0%,100%{transform:translate(0,0);}25%{transform:translate(3px,-3px);}50%{transform:translate(-3px,3px);}75%{transform:translate(3px,3px);} }
-    @keyframes temblor { 0%,100%{transform:translate(0,0);}25%{transform:translate(4px,-4px);}50%{transform:translate(-4px,4px);}75%{transform:translate(4px,4px);} }
-    @keyframes temblorGlobal { 0%{transform:translate(0,0);}25%{transform:translate(8px,-8px);}50%{transform:translate(-8px,8px);}75%{transform:translate(8px,8px);}100%{transform:translate(0,0);} }
-    @keyframes fadeout { 0%{opacity:1;}75%{opacity:1;}100%{opacity:0;display:none;} }
-    button { font-family:'Bebas Neue',sans-serif; font-size:30px; padding:10px 40px; border:none; border-radius:12px; background:white; color:black; cursor:pointer; z-index:1; }
-    canvas { position:fixed; top:0; left:0; pointer-events:none; z-index:0; }
+    /* ... (resto de estilos igual que antes) ... */
   </style>
 </head>
 <body>
@@ -100,9 +48,19 @@
   <button id="empezar" onclick="iniciarJuego()">Empezar a jugar</button>
   <button id="reiniciar" class="oculto" onclick="reiniciar(event)">Volver a jugar</button>
 
-  <button id="botonConfiguracion" onclick="mostrarOcultarPanel()">⚙</button>
-  <button id="botonVerEmblemas" onclick="mostrarOcultarPanelEmblemas()">Emblemas</button>
+  <!-- Botón Configuración ⚙ -->
+  <button id="botonConfiguracion" onclick="mostrarOcultarPanel()" 
+    style="position: fixed; top: 10px; left: 10px; font-size: 24px; background: white; color: black; padding: 5px 15px; border-radius: 10px; border: none; cursor: pointer; z-index: 10;">
+    ⚙
+  </button>
 
+  <!-- Botón Emblemas -->
+  <button id="botonVerEmblemas" onclick="mostrarOcultarPanelEmblemas()" 
+    style="position: fixed; top: 10px; right: 10px; font-size: 20px; background: white; color: black; padding: 5px 15px; border-radius: 10px; border: none; cursor: pointer; z-index: 10;">
+    Emblemas
+  </button>
+
+  <!-- Panel de Emblemas y Configuración -->
   <div id="panelEmblemas">
     <div id="listaEmblemas"></div>
     <div id="panelConfiguracion" class="oculto">
@@ -150,21 +108,267 @@
     <source src="video666.mp4" type="video/mp4" />
   </video>
 
-  <!-- Script del juego -->
   <script>
-    /* Aquí va el script completo que te pasé antes (Bloque 3, 4 y 5 integrados).
-       Incluye:
-       - iniciarJuego()
-       - mostrarOcultarPanel()
-       - mostrarOcultarPanelEmblemas()
-       - actualizarPanelEmblemas()
-       - control de volumen
-       - cookies para emblemas
-       - mostrarVideo666()
-       - reiniciar()
-       - lanzarConfeti()
-       - soporte para click y touchstart
-    */
+<script>
+let contador = 0;
+let juegoActivo = false;
+let tiempoClickRapido = [];
+let victorias = 0;
+let esperaPaciencia = null;
+let emblemasObtenidos = {};
+let emblemaFinalDesbloqueado = false;
+let evento666Activado = false;
+let musicaInterrumpida = false;
+
+const numero = document.getElementById("numero");
+const mensaje = document.getElementById("mensajeVictoria");
+const btnEmpezar = document.getElementById("empezar");
+const btnReiniciar = document.getElementById("reiniciar");
+const panelEmblemas = document.getElementById("panelEmblemas");
+const canvas = document.getElementById("confetiCanvas");
+const ctx = canvas.getContext("2d");
+
+const sonidosClick = [click1, click2, click3, click4, click5, click6, click7, click8];
+const musicaFondo = document.getElementById("musicaFondo");
+const musica666 = document.getElementById("musica666");
+const musicaVictoria = document.getElementById("musicaVictoria");
+const sonidoFinal = document.getElementById("sonidoFinal");
+const sonidoEmblema = document.getElementById("sonidoEmblema");
+const sonidoCompletos = document.getElementById("sonidoCompletos");
+
+const listaEmblemas = [
+  "🥇 Medalla de Bronce",
+  "⚡ Velocidad Loca",
+  "💎 Diamante Triple",
+  "🎮 Casi Casi Gamer",
+  "🕒 Paciencia Infinita",
+  "🏁 Meta Suprema",
+  "👹 No Confíes En 666"
+];
+
+// Inicia el juego
+function iniciarJuego() {
+  btnEmpezar.classList.add("oculto");
+  numero.classList.remove("oculto");
+  juegoActivo = true;
+  musicaFondo.volume = parseFloat(volumenMusica.value);
+  musicaFondo.currentTime = 0;
+  musicaFondo.play().catch(() => {});
+  document.body.addEventListener("click", contar);
+  document.body.addEventListener("touchstart", contar);
+  cargarEmblemas();
+  actualizarPanelEmblemas();
+}
+
+// Panel de configuración
+function mostrarOcultarPanel() {
+  panelEmblemas.style.display =
+    panelEmblemas.style.display === "block" ? "none" : "block";
+  if (panelEmblemas.style.display === "block") {
+    document.getElementById("panelConfiguracion").classList.remove("oculto");
+    actualizarPanelEmblemas();
+  }
+}
+
+// Panel de emblemas
+function mostrarOcultarPanelEmblemas() {
+  panelEmblemas.style.display =
+    panelEmblemas.style.display === "block" ? "none" : "block";
+  if (panelEmblemas.style.display === "block") {
+    document.getElementById("panelConfiguracion").classList.add("oculto");
+    actualizarPanelEmblemas();
+  }
+}
+
+// Actualiza lista de emblemas
+function actualizarPanelEmblemas() {
+  const lista = document.getElementById("listaEmblemas");
+  lista.innerHTML = "<strong>🏅 Emblemas:</strong><br><br>";
+  listaEmblemas.forEach(nombre => {
+    lista.innerHTML += emblemasObtenidos[nombre]
+      ? `✨ ${nombre}<br>`
+      : `⛔ ${nombre}<br>`;
+  });
+}
+
+// Control de volumen
+volumenMusica.addEventListener("input", () => {
+  musicaFondo.volume = parseFloat(volumenMusica.value);
+  musica666.volume = parseFloat(volumenMusica.value);
+  musicaVictoria.volume = parseFloat(volumenMusica.value);
+});
+
+volumenSFX.addEventListener("input", () => {
+  sonidosClick.forEach(s => s.volume = parseFloat(volumenSFX.value));
+  sonidoFinal.volume = parseFloat(volumenSFX.value);
+  sonidoEmblema.volume = parseFloat(volumenSFX.value);
+  sonidoCompletos.volume = parseFloat(volumenSFX.value);
+});
+
+// Cookies para emblemas
+function guardarEmblemas() {
+  document.cookie = "emblemas=" + JSON.stringify(emblemasObtenidos) + "; path=/; max-age=31536000";
+}
+
+function cargarEmblemas() {
+  const match = document.cookie.match(/(?:^|;) ?emblemas=([^;]*)(?:;|$)/);
+  if (match) {
+    try {
+      emblemasObtenidos = JSON.parse(decodeURIComponent(match[1]));
+    } catch (e) {
+      emblemasObtenidos = {};
+    }
+  }
+}
+
+function reiniciarEmblemas() {
+  document.cookie = "emblemas=; path=/; max-age=0";
+  emblemasObtenidos = {};
+  emblemaFinalDesbloqueado = false;
+  document.getElementById("emblemasVitrina").innerHTML = "";
+  actualizarPanelEmblemas();
+}
+</script>
+<script>
+function mostrarVideo666() {
+  const video = document.getElementById("video666");
+  video.classList.remove("oculto");
+  Object.assign(video.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100vw",
+    height: "100vh",
+    zIndex: "1000",
+    objectFit: "cover"
+  });
+
+  // Pausar música normal
+  musicaFondo.pause();
+  if (window.musica666) musica666.pause();
+
+  // Reproducir video
+  video.play();
+  video.onended = () => {
+    video.classList.add("oculto");
+    document.body.style.backgroundColor = "black";
+
+    // Mostrar imagen final
+    const imagenFinal = document.createElement("img");
+    imagenFinal.src = "final666.png";
+    Object.assign(imagenFinal.style, {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "90vw",
+      maxHeight: "90vh",
+      zIndex: "999",
+      opacity: "0",
+      transition: "opacity 2s ease-in-out"
+    });
+
+    document.body.appendChild(imagenFinal);
+
+    // Sonido misterioso
+    const sonido = document.getElementById("sonidoMisterio");
+    sonido.currentTime = 0;
+    sonido.volume = parseFloat(volumenSFX.value);
+    sonido.play();
+
+    // Fade-in de la imagen
+    setTimeout(() => {
+      imagenFinal.style.opacity = "1";
+    }, 100);
+
+    // Desbloquear emblema especial
+    setTimeout(() => {
+      desbloquearEmblema("👹 No Confíes En 666");
+    }, 3000);
+
+    // Volver al juego después de 8 segundos
+    setTimeout(() => {
+      imagenFinal.remove();
+      numero.textContent = "670";
+      contador = 670;
+      if (!musicaInterrumpida) musicaFondo.play().catch(() => {});
+    }, 8000);
+  };
+}
+</script>
+<script>
+function reiniciar(e) {
+  e.stopPropagation();
+  contador = 0;
+  numero.textContent = contador;
+
+  // Quitar efectos visuales
+  document.body.classList.remove("victoria", "ritmo", "temblorGlobal");
+  mensaje.classList.add("oculto");
+
+  // Resetear música
+  musicaVictoria.pause();
+  musicaVictoria.currentTime = 0;
+  musicaFondo.currentTime = 0;
+  musicaFondo.volume = parseFloat(volumenMusica.value);
+  musicaFondo.play();
+
+  // Limpiar confeti
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Ocultar botón de reinicio
+  btnReiniciar.classList.add("oculto");
+
+  // Resetear variables
+  tiempoClickRapido = [];
+  clearTimeout(esperaPaciencia);
+  esperaPaciencia = null;
+  evento666Activado = false;
+  musicaInterrumpida = false;
+
+  // Mostrar número y reactivar juego
+  numero.classList.remove("oculto");
+  juegoActivo = true;
+}
+
+function lanzarConfeti() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const confetis = [];
+
+  // Crear partículas de confeti
+  for (let i = 0; i < 250; i++) {
+    confetis.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height,
+      r: Math.random() * 6 + 4,
+      d: Math.random() * 10 + 10,
+      color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+      tilt: Math.random() * 10 - 5,
+      tiltAngle: 0
+    });
+  }
+
+  // Animación del confeti
+  function animar() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let c of confetis) {
+      ctx.beginPath();
+      ctx.lineWidth = c.r;
+      ctx.strokeStyle = c.color;
+      ctx.moveTo(c.x + c.tilt, c.y);
+      ctx.lineTo(c.x + c.tilt + c.r / 2, c.y + c.d);
+      ctx.stroke();
+      c.y += 4;
+      c.tiltAngle += 0.1;
+      c.tilt = Math.sin(c.tiltAngle) * 10;
+    }
+    requestAnimationFrame(animar);
+  }
+
+  animar();
+}
+</script>
   </script>
 </body>
 </html>
