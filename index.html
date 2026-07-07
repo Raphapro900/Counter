@@ -36,19 +36,21 @@
     .rojo { background-color: red !important; }
     .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
-    .temblorFinal { animation: temblorFinal 0.1s infinite; }
 
-    @keyframes temblorFinal {
+    /* TEMBLOR INTENSO PARA 666 */
+    .temblor666 { animation: temblor666 0.1s infinite; }
+
+    @keyframes temblor666 {
       0%, 100% { transform: translate(0, 0) rotate(0deg); }
-      10% { transform: translate(-5px, 3px) rotate(-0.5deg); }
-      20% { transform: translate(5px, -3px) rotate(0.5deg); }
-      30% { transform: translate(-3px, 5px) rotate(-0.3deg); }
-      40% { transform: translate(3px, -5px) rotate(0.3deg); }
-      50% { transform: translate(-5px, -3px) rotate(-0.5deg); }
-      60% { transform: translate(5px, 3px) rotate(0.5deg); }
-      70% { transform: translate(-3px, -5px) rotate(-0.3deg); }
-      80% { transform: translate(3px, 5px) rotate(0.3deg); }
-      90% { transform: translate(-5px, 3px) rotate(-0.5deg); }
+      10% { transform: translate(-8px, 5px) rotate(-1deg); }
+      20% { transform: translate(8px, -5px) rotate(1deg); }
+      30% { transform: translate(-5px, 8px) rotate(-0.5deg); }
+      40% { transform: translate(5px, -8px) rotate(0.5deg); }
+      50% { transform: translate(-8px, -5px) rotate(-1deg); }
+      60% { transform: translate(8px, 5px) rotate(1deg); }
+      70% { transform: translate(-5px, -8px) rotate(-0.5deg); }
+      80% { transform: translate(5px, 8px) rotate(0.5deg); }
+      90% { transform: translate(-8px, 5px) rotate(-1deg); }
     }
 
     #numero {
@@ -417,7 +419,6 @@
     let evento666Cancelado = false;
     let juegoTerminado = false;
     let musica666Reproducida = false;
-    let temblorFinalActivo = false;
 
     // ============================================================
     //  REFERENCIAS DOM
@@ -462,7 +463,7 @@
     musica666.loop = false;
 
     // ============================================================
-    //  LISTA DE EMBLEMAS (con nombre oculto para 666)
+    //  LISTA DE EMBLEMAS (con "???" para 666)
     // ============================================================
     const listaEmblemas = [
       "🥇 Medalla de Bronce",
@@ -558,6 +559,9 @@
       temporizador666Activo = false;
       evento666Cancelado = true;
       
+      // Quitar temblor 666
+      document.body.classList.remove("temblor666");
+      
       // Detener música 666
       musica666.pause();
       musica666.currentTime = 0;
@@ -578,11 +582,12 @@
       if (evento666Activado) return;
       evento666Activado = true;
       
+      // Quitar temblor 666
+      document.body.classList.remove("temblor666");
+      
       const video = document.getElementById("video666");
       video.classList.remove("oculto");
       video.style.display = "block";
-
-      // La música 666 ya está sonando, la dejamos sonar durante el video
 
       video.play().catch(() => {});
       video.onended = () => {
@@ -809,7 +814,7 @@
     }
 
     // ============================================================
-    //  CRÉDITOS FINALES (con los textos solicitados)
+    //  CRÉDITOS FINALES
     // ============================================================
     function iniciarCreditosFinales() {
       if (document.getElementById("creditosActivos")) return;
@@ -891,7 +896,7 @@
         document.body.classList.remove("temblor", "rojo", "blur");
       }, 200);
 
-      // Contador: de 660 pasa a 666, luego a 670
+      // Contador: de 660 pasa a 666
       if (contador === 660) {
         contador = 666;
       } else {
@@ -940,13 +945,9 @@
       document.body.appendChild(incremento);
       setTimeout(() => incremento.remove(), 1000);
 
-      // ⭐ TEMBLOR FINAL - cuando se acerca al final (a partir de 900)
-      if (contador >= 900 && contador < 1000 && !temblorFinalActivo) {
-        temblorFinalActivo = true;
-        document.body.classList.add("temblorFinal");
-      } else if (contador >= 1000) {
-        document.body.classList.remove("temblorFinal");
-        temblorFinalActivo = false;
+      // ⭐ TEMBLOR 666 - cuando llega a 666
+      if (contador === 666 && !temporizador666Activo && !evento666Activado) {
+        document.body.classList.add("temblor666");
       }
 
       // ⭐ INICIAR TEMPORIZADOR 666 (si llegamos a 666)
@@ -959,10 +960,6 @@
       if (contador === 1000 && !juegoTerminado) {
         juegoTerminado = true;
         juegoActivo = false;
-        
-        // Quitar temblor final
-        document.body.classList.remove("temblorFinal");
-        temblorFinalActivo = false;
         
         // Medalla de Bronce - primera vez que llega a 1000
         if (!yaGanoBronce) {
@@ -1007,7 +1004,7 @@
       }
 
       // Verificar emblemas (excepto los que ya se verifican en 1000)
-      if (contador < 1000) {
+      if (contador < 1000 && contador !== 666) {
         const ahora = Date.now();
         tiempoClickRapido.push(ahora);
         tiempoClickUltra.push(ahora);
@@ -1042,8 +1039,7 @@
       juegoActivo = true;
       juegoTerminado = false;
       musica666Reproducida = false;
-      temblorFinalActivo = false;
-      document.body.classList.remove("temblorFinal");
+      document.body.classList.remove("temblor666");
       
       musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
       musicaFondo.currentTime = 0;
@@ -1068,7 +1064,7 @@
       contador = 0;
       numero.textContent = contador;
 
-      document.body.classList.remove("victoria", "ritmo", "temblor", "rojo", "blur", "temblorFinal");
+      document.body.classList.remove("victoria", "ritmo", "temblor", "rojo", "blur", "temblor666");
       mensaje.classList.add("oculto");
 
       // Cancelar temporizador 666 si está activo
@@ -1079,7 +1075,6 @@
       temporizador666.classList.add("oculto");
       temporizador666Activo = false;
       evento666Cancelado = false;
-      temblorFinalActivo = false;
 
       // Detener todas las músicas
       musicaVictoria.pause();
@@ -1150,9 +1145,8 @@
 
     console.log("🎮 Clicker Raphástico - Contando de 10 en 10");
     console.log("🥇 Medalla de Bronce → Llegar a 1000 por primera vez");
-    console.log("👹 666 → Temporizador de 5 segundos, si saltas se cancela");
+    console.log("👹 666 → Temporizador de 5 segundos + temblor intenso");
     console.log("🏁 Meta Suprema → Completar todos los emblemas");
-    console.log("🎵 Después del evento 666, la música de fondo se detiene hasta reiniciar");
   </script>
 </body>
 </html>
