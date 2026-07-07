@@ -76,17 +76,48 @@
     #emblemasVitrina {
       position: fixed;
       bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+      right: 20px;
       display: flex;
-      gap: 10px;
-      font-size: 30px;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 24px;
       z-index: 3;
-      background: rgba(0,0,0,0.7);
-      padding: 10px 20px;
+      background: rgba(0,0,0,0.85);
+      padding: 15px 20px;
       border-radius: 15px;
-      flex-wrap: wrap;
-      justify-content: center;
+      border: 2px solid rgba(255,215,0,0.3);
+      min-width: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+      align-items: flex-start;
+    }
+    #emblemasVitrina .emblema-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #aaa;
+      transition: all 0.5s;
+      font-size: 20px;
+      width: 100%;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    #emblemasVitrina .emblema-item.desbloqueado {
+      color: #ffdd00;
+      background: rgba(255,215,0,0.15);
+      text-shadow: 0 0 10px rgba(255,215,0,0.3);
+    }
+    #emblemasVitrina .emblema-item .icono {
+      font-size: 28px;
+      width: 40px;
+      text-align: center;
+    }
+    #emblemasVitrina .emblema-item .nombre {
+      font-size: 18px;
+      flex: 1;
+    }
+    #emblemasVitrina .emblema-item .estado {
+      font-size: 16px;
     }
 
     #notificacionEmblema {
@@ -302,6 +333,19 @@
       0% { transform: translateY(100%); }
       100% { transform: translateY(-100%); }
     }
+
+    /* Scrollbar personalizada para la vitrina */
+    #emblemasVitrina::-webkit-scrollbar {
+      width: 4px;
+    }
+    #emblemasVitrina::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    #emblemasVitrina::-webkit-scrollbar-thumb {
+      background: gold;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
@@ -319,11 +363,11 @@
     <div id="panelConfiguracion" class="oculto">
       <div class="configItem">
         <label for="volumenMusica">Volumen Música:</label>
-        <input type="range" id="volumenMusica" min="0" max="1" step="0.01" value="0.5" />
+        <input type="range" id="volumenMusica" min="0" max="1" step="0.01" value="0.8" />
       </div>
       <div class="configItem">
         <label for="volumenSFX">Volumen SFX:</label>
-        <input type="range" id="volumenSFX" min="0" max="1" step="0.01" value="0.5" />
+        <input type="range" id="volumenSFX" min="0" max="1" step="0.01" value="0.8" />
       </div>
       <div class="configItem">
         <button onclick="reiniciarEmblemas()">🔁 Reiniciar emblemas</button>
@@ -332,7 +376,10 @@
   </div>
 
   <div id="notificacionEmblema"></div>
+  
+  <!-- VITRINA DE EMBLEMAS - ESQUINA DERECHA ABAJO -->
   <div id="emblemasVitrina"></div>
+  
   <div class="contador-info" id="contadorInfo">Contando de 10 en 10</div>
 
   <!-- Audios -->
@@ -447,18 +494,15 @@
       video.classList.remove("oculto");
       video.style.display = "block";
 
-      // Pausar música normal
       musicaFondo.pause();
       if (musica666) musica666.pause();
 
-      // Reproducir video
       video.play().catch(() => {});
       video.onended = () => {
         video.classList.add("oculto");
         video.style.display = "none";
         document.body.style.backgroundColor = "black";
 
-        // Mostrar imagen final
         const imagenFinal = document.createElement("img");
         imagenFinal.src = "final666.png";
         Object.assign(imagenFinal.style, {
@@ -475,26 +519,21 @@
 
         document.body.appendChild(imagenFinal);
 
-        // Sonido misterioso
         sonidoMisterio.currentTime = 0;
         sonidoMisterio.volume = parseFloat(document.getElementById("volumenSFX").value);
         sonidoMisterio.play().catch(() => {});
 
-        // Fade-in de la imagen
         setTimeout(() => {
           imagenFinal.style.opacity = "1";
         }, 100);
 
-        // Desbloquear emblema especial (agregado a la lista)
         setTimeout(() => {
-          // Agregar emblema 666 si no existe
           if (!listaEmblemas.includes("👹 No Confíes En 666")) {
             listaEmblemas.push("👹 No Confíes En 666");
           }
           desbloquearEmblema("👹 No Confíes En 666");
         }, 3000);
 
-        // Volver al juego después de 8 segundos
         setTimeout(() => {
           imagenFinal.remove();
           numero.textContent = "670";
@@ -525,7 +564,6 @@
       actualizarPanelEmblemas();
       actualizarVitrina();
 
-      // Verificar si todos los emblemas están completos
       if (Object.keys(emblemasObtenidos).length === listaEmblemas.length && !creditosYaMostrados) {
         creditosYaMostrados = true;
         iniciarCreditosFinales();
@@ -533,17 +571,35 @@
     }
 
     // ============================================================
-    //  ACTUALIZAR VITRINA
+    //  ACTUALIZAR VITRINA (ESQUINA DERECHA ABAJO)
     // ============================================================
     function actualizarVitrina() {
-      vitrina.innerHTML = "";
-      const emblemas = Object.keys(emblemasObtenidos);
-      emblemas.forEach(e => {
-        const span = document.createElement("span");
-        span.textContent = e.split(" ")[0];
-        span.title = e;
-        span.style.fontSize = "30px";
-        vitrina.appendChild(span);
+      vitrina.innerHTML = '<div style="color: gold; font-size: 14px; margin-bottom: 8px; width: 100%; text-align: center; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px;">🏅 EMBLEMAS</div>';
+      
+      listaEmblemas.forEach(nombre => {
+        const div = document.createElement("div");
+        div.className = "emblema-item";
+        if (emblemasObtenidos[nombre]) {
+          div.classList.add("desbloqueado");
+        }
+        
+        const icono = document.createElement("span");
+        icono.className = "icono";
+        icono.textContent = emblemasObtenidos[nombre] ? "✨" : "⛔";
+        
+        const nombreSpan = document.createElement("span");
+        nombreSpan.className = "nombre";
+        nombreSpan.textContent = nombre;
+        
+        const estado = document.createElement("span");
+        estado.className = "estado";
+        estado.textContent = emblemasObtenidos[nombre] ? "✓" : "✗";
+        estado.style.color = emblemasObtenidos[nombre] ? "#4caf50" : "#666";
+        
+        div.appendChild(icono);
+        div.appendChild(nombreSpan);
+        div.appendChild(estado);
+        vitrina.appendChild(div);
       });
     }
 
@@ -700,25 +756,20 @@
     function contar(e) {
       if (!juegoActivo || evento666Activado) return;
       
-      // Ignorar clics en botones
       if (e.target.tagName === "BUTTON") return;
 
-      // Efecto visual
       document.body.classList.add("temblor", "rojo", "blur");
       setTimeout(() => {
         document.body.classList.remove("temblor", "rojo", "blur");
       }, 200);
 
-      // Contar de 10 en 10
       contador += 10;
       numero.textContent = contador;
 
-      // Efecto salto
       numero.classList.remove("saltar");
       void numero.offsetWidth;
       numero.classList.add("saltar");
 
-      // Sonido click
       const sonido = sonidosClick[clickActual];
       if (sonido) {
         sonido.currentTime = 0;
@@ -727,7 +778,6 @@
       }
       clickActual = (clickActual + 1) % sonidosClick.length;
 
-      // Mostrar +10
       const incremento = document.createElement("div");
       incremento.textContent = "+10";
       incremento.style.cssText = `
@@ -744,11 +794,11 @@
       document.body.appendChild(incremento);
       setTimeout(() => incremento.remove(), 1000);
 
-      // ⭐ EVENTO 666 - SE ACTIVA EN 666
+      // ⭐ EVENTO 666
       if (contador === 666 && !evento666Activado) {
         evento666Activado = true;
         mostrarVideo666();
-        return; // Salir para no seguir procesando
+        return;
       }
 
       // Verificar emblemas
@@ -763,12 +813,12 @@
       if (contador === 100) desbloquearEmblema("🥇 Medalla de Bronce");
       if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
 
-      // Paciencia Infinita
+      // ⭐ PACENCIA INFINITA - AHORA 30 SEGUNDOS (30000 ms)
       if (contador === 300 && !esperaPaciencia) {
         tiempoPaciencia = Date.now();
         esperaPaciencia = setTimeout(() => {
           if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
-        }, 180000);
+        }, 30000); // 30 segundos
       } else if (contador !== 300) {
         clearTimeout(esperaPaciencia);
         esperaPaciencia = null;
@@ -792,7 +842,6 @@
         contadorInfo.style.display = "none";
       }
 
-      // Verificar todos los emblemas
       if (Object.keys(emblemasObtenidos).length === listaEmblemas.length && !creditosYaMostrados) {
         creditosYaMostrados = true;
         iniciarCreditosFinales();
@@ -808,9 +857,16 @@
       numero.textContent = "0";
       contador = 0;
       juegoActivo = true;
+      
       musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
       musicaFondo.currentTime = 0;
-      musicaFondo.play().catch(() => {});
+      musicaFondo.play().catch((err) => {
+        console.log("Error al reproducir música:", err);
+        setTimeout(() => {
+          musicaFondo.play().catch(() => {});
+        }, 1000);
+      });
+      
       document.body.addEventListener("click", contar);
       document.body.addEventListener("touchstart", contar);
       actualizarPanelEmblemas();
@@ -894,6 +950,7 @@
     console.log("💡 Objetivo: Llegar a 1000 clics");
     console.log("🏆 Desbloquea los 7 emblemas");
     console.log("👹 EVENTO 666: ¡Cuando llegues a 666 activarás el evento especial!");
+    console.log("⏱️ Paciencia Infinita: Espera 30 segundos en el número 300");
   </script>
 </body>
 </html>
