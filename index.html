@@ -307,6 +307,7 @@
 <body>
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
+  <div id="cuentaRegresiva" class="oculto">5</div>
 
   <button id="empezar">Empezar a jugar</button>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
@@ -335,10 +336,12 @@
   <div class="contador-info" id="contadorInfo">Contando de 10 en 10</div>
 
   <!-- Audios -->
-  <audio id="musicaFondo" src="fondo.mp3" loop preload="auto"></audio>
+  <audio id="musicaFondo" src="fondoo.mp3" loop preload="auto"></audio>
+  <audio id="musica666" src="musica666.mp3" loop preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
   <audio id="sonidoEmblema" src="emblema.mp3" preload="auto"></audio>
+  <audio id="sonidoMisterio" src="misterio.mp3" preload="auto"></audio>
 
   <audio id="click1" src="click1.mp3" preload="auto"></audio>
   <audio id="click2" src="click2.mp3" preload="auto"></audio>
@@ -372,6 +375,7 @@
     let emblemasObtenidos = {};
     let creditosYaMostrados = false;
     let evento666Activado = false;
+    let musicaInterrumpida = false;
     const totalEmblemas = 7;
 
     // ============================================================
@@ -386,6 +390,7 @@
     const vitrina = document.getElementById("emblemasVitrina");
     const notificacion = document.getElementById("notificacionEmblema");
     const contadorInfo = document.getElementById("contadorInfo");
+    const cuentaRegresiva = document.getElementById("cuentaRegresiva");
 
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
@@ -404,6 +409,7 @@
       document.getElementById("click8")
     ];
     const musicaFondo = document.getElementById("musicaFondo");
+    const musica666 = document.getElementById("musica666");
     const musicaVictoria = document.getElementById("musicaVictoria");
     const sonidoFinal = document.getElementById("sonidoFinal");
     const sonidoEmblema = document.getElementById("sonidoEmblema");
@@ -434,6 +440,75 @@
     }
 
     // ============================================================
+    //  MOSTRAR VIDEO 666
+    // ============================================================
+    function mostrarVideo666() {
+      const video = document.getElementById("video666");
+      video.classList.remove("oculto");
+      video.style.display = "block";
+
+      // Pausar música normal
+      musicaFondo.pause();
+      if (musica666) musica666.pause();
+
+      // Reproducir video
+      video.play().catch(() => {});
+      video.onended = () => {
+        video.classList.add("oculto");
+        video.style.display = "none";
+        document.body.style.backgroundColor = "black";
+
+        // Mostrar imagen final
+        const imagenFinal = document.createElement("img");
+        imagenFinal.src = "final666.png";
+        Object.assign(imagenFinal.style, {
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          maxWidth: "90vw",
+          maxHeight: "90vh",
+          zIndex: "999",
+          opacity: "0",
+          transition: "opacity 2s ease-in-out"
+        });
+
+        document.body.appendChild(imagenFinal);
+
+        // Sonido misterioso
+        sonidoMisterio.currentTime = 0;
+        sonidoMisterio.volume = parseFloat(document.getElementById("volumenSFX").value);
+        sonidoMisterio.play().catch(() => {});
+
+        // Fade-in de la imagen
+        setTimeout(() => {
+          imagenFinal.style.opacity = "1";
+        }, 100);
+
+        // Desbloquear emblema especial (agregado a la lista)
+        setTimeout(() => {
+          // Agregar emblema 666 si no existe
+          if (!listaEmblemas.includes("👹 No Confíes En 666")) {
+            listaEmblemas.push("👹 No Confíes En 666");
+          }
+          desbloquearEmblema("👹 No Confíes En 666");
+        }, 3000);
+
+        // Volver al juego después de 8 segundos
+        setTimeout(() => {
+          imagenFinal.remove();
+          numero.textContent = "670";
+          contador = 670;
+          if (!musicaInterrumpida) {
+            musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
+            musicaFondo.play().catch(() => {});
+          }
+          evento666Activado = false;
+        }, 8000);
+      };
+    }
+
+    // ============================================================
     //  DESBLOQUEAR EMBLEMA
     // ============================================================
     function desbloquearEmblema(nombre) {
@@ -451,7 +526,7 @@
       actualizarVitrina();
 
       // Verificar si todos los emblemas están completos
-      if (Object.keys(emblemasObtenidos).length === totalEmblemas && !creditosYaMostrados) {
+      if (Object.keys(emblemasObtenidos).length === listaEmblemas.length && !creditosYaMostrados) {
         creditosYaMostrados = true;
         iniciarCreditosFinales();
       }
@@ -623,7 +698,7 @@
     //  FUNCIÓN CONTAR (PRINCIPAL)
     // ============================================================
     function contar(e) {
-      if (!juegoActivo || contador >= 1000) return;
+      if (!juegoActivo || evento666Activado) return;
       
       // Ignorar clics en botones
       if (e.target.tagName === "BUTTON") return;
@@ -669,6 +744,13 @@
       document.body.appendChild(incremento);
       setTimeout(() => incremento.remove(), 1000);
 
+      // ⭐ EVENTO 666 - SE ACTIVA EN 666
+      if (contador === 666 && !evento666Activado) {
+        evento666Activado = true;
+        mostrarVideo666();
+        return; // Salir para no seguir procesando
+      }
+
       // Verificar emblemas
       const ahora = Date.now();
       tiempoClickRapido.push(ahora);
@@ -711,7 +793,7 @@
       }
 
       // Verificar todos los emblemas
-      if (Object.keys(emblemasObtenidos).length === totalEmblemas && !creditosYaMostrados) {
+      if (Object.keys(emblemasObtenidos).length === listaEmblemas.length && !creditosYaMostrados) {
         creditosYaMostrados = true;
         iniciarCreditosFinales();
       }
@@ -760,6 +842,8 @@
       tiempoClickUltra = [];
       clearTimeout(esperaPaciencia);
       esperaPaciencia = null;
+      evento666Activado = false;
+      musicaInterrumpida = false;
       juegoActivo = true;
       numero.classList.remove("oculto");
       contadorInfo.style.display = "block";
@@ -772,6 +856,7 @@
       const vol = parseFloat(this.value);
       musicaFondo.volume = vol;
       musicaVictoria.volume = vol;
+      musica666.volume = vol;
     });
 
     document.getElementById("volumenSFX").addEventListener("input", function() {
@@ -779,6 +864,7 @@
       sonidosClick.forEach(s => s.volume = vol);
       sonidoFinal.volume = vol;
       sonidoEmblema.volume = vol;
+      sonidoMisterio.volume = vol;
     });
 
     // ============================================================
@@ -807,6 +893,7 @@
     console.log("🎮 Clicker Raphástico - Contando de 10 en 10");
     console.log("💡 Objetivo: Llegar a 1000 clics");
     console.log("🏆 Desbloquea los 7 emblemas");
+    console.log("👹 EVENTO 666: ¡Cuando llegues a 666 activarás el evento especial!");
   </script>
 </body>
 </html>
