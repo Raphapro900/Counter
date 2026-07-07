@@ -36,6 +36,20 @@
     .rojo { background-color: red !important; }
     .victoria { background-color: #00cc00 !important; color: black; }
     .ritmo { animation: vibrar 0.3s infinite ease-in-out; }
+    .temblorFinal { animation: temblorFinal 0.1s infinite; }
+
+    @keyframes temblorFinal {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      10% { transform: translate(-5px, 3px) rotate(-0.5deg); }
+      20% { transform: translate(5px, -3px) rotate(0.5deg); }
+      30% { transform: translate(-3px, 5px) rotate(-0.3deg); }
+      40% { transform: translate(3px, -5px) rotate(0.3deg); }
+      50% { transform: translate(-5px, -3px) rotate(-0.5deg); }
+      60% { transform: translate(5px, 3px) rotate(0.5deg); }
+      70% { transform: translate(-3px, -5px) rotate(-0.3deg); }
+      80% { transform: translate(3px, 5px) rotate(0.3deg); }
+      90% { transform: translate(-5px, 3px) rotate(-0.5deg); }
+    }
 
     #numero {
       font-size: 150px;
@@ -359,7 +373,7 @@
 
   <!-- Audios -->
   <audio id="musicaFondo" src="fondoo.mp3" loop preload="auto"></audio>
-  <audio id="musica666" src="musica666.mp3" loop preload="auto"></audio>
+  <audio id="musica666" src="musica666.mp3" preload="auto"></audio>
   <audio id="musicaVictoria" src="victoria.mp3" loop preload="auto"></audio>
   <audio id="sonidoFinal" src="final.mp3" preload="auto"></audio>
   <audio id="sonidoEmblema" src="emblema.mp3" preload="auto"></audio>
@@ -402,7 +416,8 @@
     let tiempoRestante666 = 5;
     let evento666Cancelado = false;
     let juegoTerminado = false;
-    let musica666Reproducida = false; // Para saber si ya se reprodujo musica666
+    let musica666Reproducida = false;
+    let temblorFinalActivo = false;
 
     // ============================================================
     //  REFERENCIAS DOM
@@ -443,8 +458,11 @@
     const sonidoEmblema = document.getElementById("sonidoEmblema");
     const sonidoMisterio = document.getElementById("sonidoMisterio");
 
+    // Quitar loop de musica666
+    musica666.loop = false;
+
     // ============================================================
-    //  LISTA DE EMBLEMAS
+    //  LISTA DE EMBLEMAS (con nombre oculto para 666)
     // ============================================================
     const listaEmblemas = [
       "🥇 Medalla de Bronce",
@@ -453,9 +471,11 @@
       "🎮 Casi Casi Gamer",
       "⚡ Velocidad Loca",
       "🕒 Paciencia Infinita",
-      "👹 No Confíes En 666",
+      "???", // 666 - se muestra como ??? hasta desbloquear
       "🏁 Meta Suprema"
     ];
+
+    const nombreReal666 = "👹 No Confíes En 666";
 
     // ============================================================
     //  FUNCIÓN PARA MOSTRAR NOTIFICACIÓN
@@ -489,7 +509,7 @@
       // Pausar música de fondo
       musicaFondo.pause();
       
-      // Reproducir música 666
+      // Reproducir música 666 (sin loop)
       musica666.volume = parseFloat(document.getElementById("volumenMusica").value);
       musica666.currentTime = 0;
       musica666.play().catch(() => {});
@@ -600,20 +620,56 @@
         }, 100);
 
         setTimeout(() => {
-          desbloquearEmblema("👹 No Confíes En 666");
+          desbloquearEmblema666();
         }, 3000);
 
         setTimeout(() => {
           imagenFinal.remove();
           // NO REANUDAR música de fondo después del evento 666
-          // La música de fondo se reanudará solo cuando se reinicie el juego
           evento666Activado = false;
         }, 8000);
       };
     }
 
     // ============================================================
-    //  DESBLOQUEAR EMBLEMA
+    //  DESBLOQUEAR EMBLEMA 666 (reemplaza "???" por nombre real)
+    // ============================================================
+    function desbloquearEmblema666() {
+      // Reemplazar "???" por el nombre real en la lista
+      const index = listaEmblemas.indexOf("???");
+      if (index !== -1) {
+        listaEmblemas[index] = nombreReal666;
+      }
+      
+      if (emblemasObtenidos[nombreReal666]) return;
+      emblemasObtenidos[nombreReal666] = true;
+
+      mostrarNotificacion(`👹 ¡${nombreReal666}!`, "El misterio ha sido revelado");
+
+      sonidoEmblema.playbackRate = 1;
+      sonidoEmblema.currentTime = 0;
+      sonidoEmblema.volume = parseFloat(document.getElementById("volumenSFX").value);
+      sonidoEmblema.play().catch(() => {});
+
+      actualizarPanelEmblemas();
+
+      // Verificar si todos los emblemas están completos (excluyendo Meta Suprema)
+      const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
+      const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
+      
+      if (todosObtenidos && !creditosYaMostrados) {
+        if (!emblemasObtenidos["🏁 Meta Suprema"]) {
+          emblemasObtenidos["🏁 Meta Suprema"] = true;
+          mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
+          actualizarPanelEmblemas();
+        }
+        creditosYaMostrados = true;
+        iniciarCreditosFinales();
+      }
+    }
+
+    // ============================================================
+    //  DESBLOQUEAR EMBLEMA NORMAL
     // ============================================================
     function desbloquearEmblema(nombre) {
       if (emblemasObtenidos[nombre]) return;
@@ -651,9 +707,13 @@
       lista.innerHTML = "<strong>🏅 Emblemas:</strong><br><br>";
       listaEmblemas.forEach(nombre => {
         const desbloqueado = emblemasObtenidos[nombre];
+        let displayNombre = nombre;
+        if (nombre === "???" && !desbloqueado) {
+          displayNombre = "??? (Misterio)";
+        }
         lista.innerHTML += desbloqueado
-          ? `✨ ${nombre}<br>`
-          : `⛔ ${nombre}<br>`;
+          ? `✨ ${displayNombre}<br>`
+          : `⛔ ${displayNombre}<br>`;
       });
     }
 
@@ -692,6 +752,13 @@
       emblemasObtenidos = {};
       creditosYaMostrados = false;
       yaGanoBronce = false;
+      
+      // Restaurar "???" en la lista si fue reemplazado
+      const index666 = listaEmblemas.indexOf(nombreReal666);
+      if (index666 !== -1) {
+        listaEmblemas[index666] = "???";
+      }
+      
       actualizarPanelEmblemas();
       mostrarNotificacion("🔄 Emblemas reiniciados", "Todos los emblemas se han reiniciado");
     }
@@ -742,7 +809,7 @@
     }
 
     // ============================================================
-    //  CRÉDITOS FINALES
+    //  CRÉDITOS FINALES (con los textos solicitados)
     // ============================================================
     function iniciarCreditosFinales() {
       if (document.getElementById("creditosActivos")) return;
@@ -767,18 +834,30 @@
       const creditos = document.createElement("div");
       creditos.style.cssText = `
         color: white;
-        font-size: 30px;
+        font-size: 28px;
         text-align: center;
-        animation: scrollCreditos 16s linear forwards;
+        animation: scrollCreditos 20s linear forwards;
         font-family: 'Bebas Neue', sans-serif;
+        padding: 20px;
+        line-height: 1.6;
       `;
+      const año = new Date().getFullYear();
       creditos.innerHTML = `
         🎬 <br><br>
-        Idea: Raphapro900<br>
-        Programación: Raphapro900 + Copilot AI<br>
-        Sonidos y efectos: Totalmente clickeables<br>
-        Espíritu: Paraguay 💛<br><br>
-        ¡Gracias por jugar!
+        <strong>Creador:</strong> Raphapro900<br>
+        <strong>Música:</strong> Ezequiel David Urbano, Suno AI<br>
+        <strong>Script:</strong> Copilot AI, DeepSeek<br><br>
+        <em style="font-size: 20px; color: #aaa;">
+          "La idea es que vi un contador de Eze Martinez<br>
+          y quise hacer uno y quise ponerle muchas cosas<br>
+          como un juego parecido a My Name Is Mayo<br>
+          con emblemas y eso :)"<br><br>
+        </em>
+        <strong>Inició el proyecto en 2025 y sigue actualizándose este ${año}</strong><br><br>
+        ¡Gracias por jugar! 🎮<br><br>
+        <span style="font-size: 18px; color: #888;">
+          CCO Raphapro900 - Counter v1.0
+        </span>
       `;
       overlay.appendChild(creditos);
       document.body.appendChild(overlay);
@@ -788,7 +867,7 @@
       setTimeout(() => {
         document.body.removeChild(overlay);
         musicaFondo.playbackRate = 1.0;
-      }, 16000);
+      }, 20000);
     }
 
     // ============================================================
@@ -812,7 +891,7 @@
         document.body.classList.remove("temblor", "rojo", "blur");
       }, 200);
 
-      // Contador: de 660 pasa a 666
+      // Contador: de 660 pasa a 666, luego a 670
       if (contador === 660) {
         contador = 666;
       } else {
@@ -841,7 +920,10 @@
       clickActual = (clickActual + 1) % sonidosClick.length;
 
       // Mostrar incremento
-      const incrementoTexto = contador === 666 ? "+6" : "+10";
+      let incrementoTexto = "+10";
+      if (contador === 666) {
+        incrementoTexto = "+6";
+      }
       const incremento = document.createElement("div");
       incremento.textContent = incrementoTexto;
       incremento.style.cssText = `
@@ -858,6 +940,15 @@
       document.body.appendChild(incremento);
       setTimeout(() => incremento.remove(), 1000);
 
+      // ⭐ TEMBLOR FINAL - cuando se acerca al final (a partir de 900)
+      if (contador >= 900 && contador < 1000 && !temblorFinalActivo) {
+        temblorFinalActivo = true;
+        document.body.classList.add("temblorFinal");
+      } else if (contador >= 1000) {
+        document.body.classList.remove("temblorFinal");
+        temblorFinalActivo = false;
+      }
+
       // ⭐ INICIAR TEMPORIZADOR 666 (si llegamos a 666)
       if (contador === 666 && !evento666Activado && !temporizador666Activo) {
         iniciarTemporizador666();
@@ -868,6 +959,10 @@
       if (contador === 1000 && !juegoTerminado) {
         juegoTerminado = true;
         juegoActivo = false;
+        
+        // Quitar temblor final
+        document.body.classList.remove("temblorFinal");
+        temblorFinalActivo = false;
         
         // Medalla de Bronce - primera vez que llega a 1000
         if (!yaGanoBronce) {
@@ -947,6 +1042,8 @@
       juegoActivo = true;
       juegoTerminado = false;
       musica666Reproducida = false;
+      temblorFinalActivo = false;
+      document.body.classList.remove("temblorFinal");
       
       musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
       musicaFondo.currentTime = 0;
@@ -971,7 +1068,7 @@
       contador = 0;
       numero.textContent = contador;
 
-      document.body.classList.remove("victoria", "ritmo", "temblor", "rojo", "blur");
+      document.body.classList.remove("victoria", "ritmo", "temblor", "rojo", "blur", "temblorFinal");
       mensaje.classList.add("oculto");
 
       // Cancelar temporizador 666 si está activo
@@ -982,6 +1079,7 @@
       temporizador666.classList.add("oculto");
       temporizador666Activo = false;
       evento666Cancelado = false;
+      temblorFinalActivo = false;
 
       // Detener todas las músicas
       musicaVictoria.pause();
