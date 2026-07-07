@@ -66,6 +66,29 @@
       z-index: 10;
     }
 
+    /* TEMPORIZADOR 666 - Abajo del número */
+    #temporizador666 {
+      position: fixed;
+      bottom: 150px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 60px;
+      color: #ff4444;
+      z-index: 20;
+      text-shadow: 0 0 30px rgba(255,68,68,0.8);
+      animation: parpadeoRapido 0.5s infinite;
+      background: rgba(0,0,0,0.8);
+      padding: 10px 30px;
+      border-radius: 15px;
+      border: 3px solid #ff4444;
+      font-family: 'Bebas Neue', sans-serif;
+    }
+
+    @keyframes parpadeoRapido {
+      0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+      50% { opacity: 0.5; transform: translateX(-50%) scale(1.05); }
+    }
+
     #cuentaRegresiva {
       font-size: 40px;
       color: orangered;
@@ -73,73 +96,24 @@
       z-index: 2;
     }
 
-    #emblemasVitrina {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      font-size: 24px;
-      z-index: 3;
-      background: rgba(0,0,0,0.85);
-      padding: 15px 20px;
-      border-radius: 15px;
-      border: 2px solid rgba(255,215,0,0.3);
-      min-width: 220px;
-      max-height: 350px;
-      overflow-y: auto;
-      align-items: flex-start;
-    }
-    #emblemasVitrina .emblema-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: #aaa;
-      transition: all 0.5s;
-      font-size: 20px;
-      width: 100%;
-      padding: 4px 8px;
-      border-radius: 8px;
-    }
-    #emblemasVitrina .emblema-item.desbloqueado {
-      color: #ffdd00;
-      background: rgba(255,215,0,0.15);
-      text-shadow: 0 0 10px rgba(255,215,0,0.3);
-    }
-    #emblemasVitrina .emblema-item.oculto {
-      color: #444;
-    }
-    #emblemasVitrina .emblema-item .icono {
-      font-size: 28px;
-      width: 40px;
-      text-align: center;
-    }
-    #emblemasVitrina .emblema-item .nombre {
-      font-size: 18px;
-      flex: 1;
-    }
-    #emblemasVitrina .emblema-item .estado {
-      font-size: 16px;
-    }
-
+    /* NOTIFICACIÓN DE EMBLEMA - Esquina inferior derecha */
     #notificacionEmblema {
       position: fixed;
-      bottom: 80px;
+      bottom: 30px;
       right: 30px;
-      font-size: 28px;
-      padding: 15px 30px;
+      font-size: 24px;
+      padding: 12px 25px;
       background: rgba(0,0,0,0.95);
       color: gold;
       border: 3px solid gold;
-      border-radius: 15px;
+      border-radius: 12px;
       z-index: 30;
       pointer-events: none;
       opacity: 0;
       transform: translateX(100px);
       transition: opacity 0.5s ease, transform 0.5s ease;
       text-align: center;
-      max-width: 400px;
+      max-width: 350px;
       font-family: 'Bebas Neue', sans-serif;
       box-shadow: 0 0 30px rgba(255,215,0,0.2);
     }
@@ -148,9 +122,9 @@
       transform: translateX(0);
     }
     #notificacionEmblema .subtexto {
-      font-size: 16px;
+      font-size: 14px;
       color: #aaa;
-      margin-top: 5px;
+      margin-top: 3px;
     }
 
     #botonVerEmblemas {
@@ -344,24 +318,15 @@
       0% { transform: translateY(100%); }
       100% { transform: translateY(-100%); }
     }
-
-    #emblemasVitrina::-webkit-scrollbar {
-      width: 4px;
-    }
-    #emblemasVitrina::-webkit-scrollbar-track {
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-    }
-    #emblemasVitrina::-webkit-scrollbar-thumb {
-      background: gold;
-      border-radius: 10px;
-    }
   </style>
 </head>
 <body>
   <div id="numero" class="oculto">0</div>
   <div id="mensajeVictoria" class="oculto">¡GANASTE!</div>
   <div id="cuentaRegresiva" class="oculto">5</div>
+
+  <!-- TEMPORIZADOR 666 -->
+  <div id="temporizador666" class="oculto">⏱ 5</div>
 
   <button id="empezar">Empezar a jugar</button>
   <button id="reiniciar" class="oculto">Volver a jugar</button>
@@ -389,8 +354,6 @@
     <div id="notificacionTexto">🏆 ¡Emblema desbloqueado!</div>
     <div class="subtexto" id="notificacionSubtexto"></div>
   </div>
-  
-  <div id="emblemasVitrina"></div>
   
   <div class="contador-info" id="contadorInfo">Contando de 10 en 10</div>
 
@@ -433,8 +396,13 @@
     let creditosYaMostrados = false;
     let evento666Activado = false;
     let musicaInterrumpida = false;
-    let yaGanoBronce = false; // Para saber si ya ganó la medalla de bronce
-    let emblema666Visible = false; // Para mostrar "???" en la vitrina
+    let yaGanoBronce = false;
+    let temporizador666Activo = false;
+    let temporizador666Interval = null;
+    let tiempoRestante666 = 5;
+    let evento666Cancelado = false;
+    let juegoTerminado = false;
+    let musica666Reproducida = false; // Para saber si ya se reprodujo musica666
 
     // ============================================================
     //  REFERENCIAS DOM
@@ -445,12 +413,12 @@
     const btnReiniciar = document.getElementById("reiniciar");
     const panelEmblemas = document.getElementById("panelEmblemas");
     const panelConfig = document.getElementById("panelConfiguracion");
-    const vitrina = document.getElementById("emblemasVitrina");
     const notificacion = document.getElementById("notificacionEmblema");
     const notificacionTexto = document.getElementById("notificacionTexto");
     const notificacionSubtexto = document.getElementById("notificacionSubtexto");
     const contadorInfo = document.getElementById("contadorInfo");
     const cuentaRegresiva = document.getElementById("cuentaRegresiva");
+    const temporizador666 = document.getElementById("temporizador666");
 
     const canvas = document.getElementById("confetiCanvas");
     const ctx = canvas.getContext("2d");
@@ -476,7 +444,7 @@
     const sonidoMisterio = document.getElementById("sonidoMisterio");
 
     // ============================================================
-    //  LISTA DE EMBLEMAS (ORDEN CORRECTO)
+    //  LISTA DE EMBLEMAS
     // ============================================================
     const listaEmblemas = [
       "🥇 Medalla de Bronce",
@@ -485,14 +453,9 @@
       "🎮 Casi Casi Gamer",
       "⚡ Velocidad Loca",
       "🕒 Paciencia Infinita",
-      "❓❓❓", // 666 - se muestra como oculto hasta desbloquear
-      "🏁 Meta Suprema" // Platino - se desbloquea al completar todos
+      "👹 No Confíes En 666",
+      "🏁 Meta Suprema"
     ];
-
-    // Nombres reales para cuando se desbloquean
-    const nombresReales = {
-      "❓❓❓": "👹 No Confíes En 666"
-    };
 
     // ============================================================
     //  FUNCIÓN PARA MOSTRAR NOTIFICACIÓN
@@ -512,21 +475,105 @@
     }
 
     // ============================================================
-    //  MOSTRAR VIDEO 666
+    //  TEMPORIZADOR 666
     // ============================================================
-    function mostrarVideo666() {
+    function iniciarTemporizador666() {
+      if (temporizador666Activo) return;
+      
+      temporizador666Activo = true;
+      evento666Cancelado = false;
+      tiempoRestante666 = 5;
+      temporizador666.classList.remove("oculto");
+      temporizador666.textContent = `⏱ ${tiempoRestante666}`;
+      
+      // Pausar música de fondo
+      musicaFondo.pause();
+      
+      // Reproducir música 666
+      musica666.volume = parseFloat(document.getElementById("volumenMusica").value);
+      musica666.currentTime = 0;
+      musica666.play().catch(() => {});
+      musica666Reproducida = true;
+      
+      // Sonido de alerta
+      const sonido = sonidosClick[0];
+      if (sonido) {
+        sonido.currentTime = 0;
+        sonido.volume = parseFloat(document.getElementById("volumenSFX").value);
+        sonido.play().catch(() => {});
+      }
+      
+      temporizador666Interval = setInterval(() => {
+        tiempoRestante666--;
+        temporizador666.textContent = `⏱ ${tiempoRestante666}`;
+        
+        // Sonido cada segundo
+        const sonidoTick = sonidosClick[clickActual % sonidosClick.length];
+        if (sonidoTick) {
+          sonidoTick.currentTime = 0;
+          sonidoTick.volume = parseFloat(document.getElementById("volumenSFX").value) * 0.5;
+          sonidoTick.play().catch(() => {});
+        }
+        
+        if (tiempoRestante666 <= 0) {
+          clearInterval(temporizador666Interval);
+          temporizador666Interval = null;
+          temporizador666.classList.add("oculto");
+          temporizador666Activo = false;
+          
+          // Si no fue cancelado, activar el evento 666
+          if (!evento666Cancelado) {
+            activarEvento666();
+          }
+        }
+      }, 1000);
+    }
+
+    function cancelarTemporizador666() {
+      if (temporizador666Interval) {
+        clearInterval(temporizador666Interval);
+        temporizador666Interval = null;
+      }
+      temporizador666.classList.add("oculto");
+      temporizador666Activo = false;
+      evento666Cancelado = true;
+      
+      // Detener música 666
+      musica666.pause();
+      musica666.currentTime = 0;
+      musica666Reproducida = false;
+      
+      // Reanudar música de fondo
+      musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
+      musicaFondo.currentTime = 0;
+      musicaFondo.play().catch(() => {});
+      
+      mostrarNotificacion("⚠️ Has saltado el 666", "El evento ha sido cancelado");
+    }
+
+    // ============================================================
+    //  ACTIVAR EVENTO 666
+    // ============================================================
+    function activarEvento666() {
+      if (evento666Activado) return;
+      evento666Activado = true;
+      
       const video = document.getElementById("video666");
       video.classList.remove("oculto");
       video.style.display = "block";
 
-      musicaFondo.pause();
-      if (musica666) musica666.pause();
+      // La música 666 ya está sonando, la dejamos sonar durante el video
 
       video.play().catch(() => {});
       video.onended = () => {
         video.classList.add("oculto");
         video.style.display = "none";
         document.body.style.backgroundColor = "black";
+
+        // Detener música 666
+        musica666.pause();
+        musica666.currentTime = 0;
+        musica666Reproducida = false;
 
         const imagenFinal = document.createElement("img");
         imagenFinal.src = "final666.png";
@@ -552,19 +599,14 @@
           imagenFinal.style.opacity = "1";
         }, 100);
 
-        // Desbloquear emblema 666 (reemplazar "???" por el nombre real)
         setTimeout(() => {
-          desbloquearEmblema("❓❓❓", "👹 No Confíes En 666");
+          desbloquearEmblema("👹 No Confíes En 666");
         }, 3000);
 
         setTimeout(() => {
           imagenFinal.remove();
-          numero.textContent = "670";
-          contador = 670;
-          if (!musicaInterrumpida) {
-            musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
-            musicaFondo.play().catch(() => {});
-          }
+          // NO REANUDAR música de fondo después del evento 666
+          // La música de fondo se reanudará solo cuando se reinicie el juego
           evento666Activado = false;
         }, 8000);
       };
@@ -573,26 +615,11 @@
     // ============================================================
     //  DESBLOQUEAR EMBLEMA
     // ============================================================
-    function desbloquearEmblema(nombre, nombreReal = null) {
-      // Si es el emblema 666, usar el nombre real
-      const nombreFinal = nombreReal || nombre;
-      
-      // Si ya está desbloqueado, no hacer nada
-      if (emblemasObtenidos[nombreFinal]) return;
-      
-      // Si es el emblema "???", reemplazarlo por el nombre real
-      if (nombre === "❓❓❓" && nombreReal) {
-        // Quitar el "???" de la lista y poner el nombre real
-        const index = listaEmblemas.indexOf("❓❓❓");
-        if (index !== -1) {
-          listaEmblemas[index] = nombreReal;
-        }
-        emblemasObtenidos[nombreReal] = true;
-        mostrarNotificacion(`👹 ¡${nombreReal}!`, "El misterio ha sido revelado");
-      } else {
-        emblemasObtenidos[nombreFinal] = true;
-        mostrarNotificacion(`🏆 ¡${nombreFinal}!`, "Nuevo emblema desbloqueado");
-      }
+    function desbloquearEmblema(nombre) {
+      if (emblemasObtenidos[nombre]) return;
+      emblemasObtenidos[nombre] = true;
+
+      mostrarNotificacion(`🏆 ¡${nombre}!`, "Nuevo emblema desbloqueado");
 
       sonidoEmblema.playbackRate = 1;
       sonidoEmblema.currentTime = 0;
@@ -600,77 +627,20 @@
       sonidoEmblema.play().catch(() => {});
 
       actualizarPanelEmblemas();
-      actualizarVitrina();
 
       // Verificar si todos los emblemas están completos (excluyendo Meta Suprema)
       const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
       const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
       
       if (todosObtenidos && !creditosYaMostrados) {
-        // Desbloquear Meta Suprema (Platino)
         if (!emblemasObtenidos["🏁 Meta Suprema"]) {
           emblemasObtenidos["🏁 Meta Suprema"] = true;
           mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
           actualizarPanelEmblemas();
-          actualizarVitrina();
         }
         creditosYaMostrados = true;
         iniciarCreditosFinales();
       }
-    }
-
-    // ============================================================
-    //  ACTUALIZAR VITRINA
-    // ============================================================
-    function actualizarVitrina() {
-      const titulo = document.createElement("div");
-      titulo.style.cssText = "color: gold; font-size: 14px; margin-bottom: 8px; width: 100%; text-align: center; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px;";
-      titulo.textContent = "🏅 EMBLEMAS";
-      vitrina.innerHTML = "";
-      vitrina.appendChild(titulo);
-      
-      listaEmblemas.forEach(nombre => {
-        const div = document.createElement("div");
-        div.className = "emblema-item";
-        
-        // Verificar si está desbloqueado
-        const desbloqueado = emblemasObtenidos[nombre];
-        if (desbloqueado) {
-          div.classList.add("desbloqueado");
-        }
-        
-        // Si es "???" y no está desbloqueado, mostrarlo como oculto
-        if (nombre === "❓❓❓" && !desbloqueado) {
-          div.classList.add("oculto");
-        }
-        
-        const icono = document.createElement("span");
-        icono.className = "icono";
-        if (nombre === "❓❓❓" && !desbloqueado) {
-          icono.textContent = "❓";
-        } else {
-          icono.textContent = desbloqueado ? "✨" : "⛔";
-        }
-        
-        const nombreSpan = document.createElement("span");
-        nombreSpan.className = "nombre";
-        nombreSpan.textContent = nombre;
-        
-        const estado = document.createElement("span");
-        estado.className = "estado";
-        if (nombre === "❓❓❓" && !desbloqueado) {
-          estado.textContent = "?";
-          estado.style.color = "#666";
-        } else {
-          estado.textContent = desbloqueado ? "✓" : "✗";
-          estado.style.color = desbloqueado ? "#4caf50" : "#666";
-        }
-        
-        div.appendChild(icono);
-        div.appendChild(nombreSpan);
-        div.appendChild(estado);
-        vitrina.appendChild(div);
-      });
     }
 
     // ============================================================
@@ -681,13 +651,9 @@
       lista.innerHTML = "<strong>🏅 Emblemas:</strong><br><br>";
       listaEmblemas.forEach(nombre => {
         const desbloqueado = emblemasObtenidos[nombre];
-        let displayNombre = nombre;
-        if (nombre === "❓❓❓" && !desbloqueado) {
-          displayNombre = "❓❓❓ (Misterio)";
-        }
         lista.innerHTML += desbloqueado
-          ? `✨ ${displayNombre}<br>`
-          : `⛔ ${displayNombre}<br>`;
+          ? `✨ ${nombre}<br>`
+          : `⛔ ${nombre}<br>`;
       });
     }
 
@@ -726,22 +692,7 @@
       emblemasObtenidos = {};
       creditosYaMostrados = false;
       yaGanoBronce = false;
-      
-      // Restaurar "???" en la lista si fue reemplazado
-      const index666 = listaEmblemas.indexOf("👹 No Confíes En 666");
-      if (index666 !== -1) {
-        listaEmblemas[index666] = "❓❓❓";
-      }
-      
-      // Asegurar que Meta Suprema esté al final
-      const indexMeta = listaEmblemas.indexOf("🏁 Meta Suprema");
-      if (indexMeta !== -1 && indexMeta < listaEmblemas.length - 1) {
-        listaEmblemas.splice(indexMeta, 1);
-        listaEmblemas.push("🏁 Meta Suprema");
-      }
-      
       actualizarPanelEmblemas();
-      actualizarVitrina();
       mostrarNotificacion("🔄 Emblemas reiniciados", "Todos los emblemas se han reiniciado");
     }
 
@@ -844,9 +795,16 @@
     //  FUNCIÓN CONTAR (PRINCIPAL)
     // ============================================================
     function contar(e) {
-      if (!juegoActivo || evento666Activado) return;
+      // Si el juego terminó o ya se llegó a 1000, no hacer nada
+      if (!juegoActivo || evento666Activado || juegoTerminado) return;
       
       if (e.target.tagName === "BUTTON") return;
+
+      // Si el temporizador 666 está activo y se hace clic, cancelar
+      if (temporizador666Activo) {
+        cancelarTemporizador666();
+        // Continuar con el conteo normal
+      }
 
       // Efecto visual
       document.body.classList.add("temblor", "rojo", "blur");
@@ -854,11 +812,16 @@
         document.body.classList.remove("temblor", "rojo", "blur");
       }, 200);
 
-      // ⭐ CONTADOR ESPECIAL: De 660 pasa a 666
+      // Contador: de 660 pasa a 666
       if (contador === 660) {
         contador = 666;
       } else {
         contador += 10;
+      }
+      
+      // Si pasamos de 1000, lo limitamos a 1000
+      if (contador > 1000) {
+        contador = 1000;
       }
       
       numero.textContent = contador;
@@ -877,7 +840,7 @@
       }
       clickActual = (clickActual + 1) % sonidosClick.length;
 
-      // Mostrar +10 (o +6 si es el salto especial)
+      // Mostrar incremento
       const incrementoTexto = contador === 666 ? "+6" : "+10";
       const incremento = document.createElement("div");
       incremento.textContent = incrementoTexto;
@@ -895,44 +858,31 @@
       document.body.appendChild(incremento);
       setTimeout(() => incremento.remove(), 1000);
 
-      // ⭐ EVENTO 666
-      if (contador === 666 && !evento666Activado) {
-        evento666Activado = true;
-        mostrarVideo666();
-        return;
+      // ⭐ INICIAR TEMPORIZADOR 666 (si llegamos a 666)
+      if (contador === 666 && !evento666Activado && !temporizador666Activo) {
+        iniciarTemporizador666();
+        return; // No procesar más este clic
       }
 
-      // Verificar emblemas (excepto Medalla de Bronce y Meta Suprema)
-      const ahora = Date.now();
-      tiempoClickRapido.push(ahora);
-      tiempoClickUltra.push(ahora);
-      tiempoClickRapido = tiempoClickRapido.filter(t => ahora - t < 10000);
-      tiempoClickUltra = tiempoClickUltra.filter(t => ahora - t < 2000);
-
-      if (tiempoClickRapido.length >= 20) desbloquearEmblema("⚡ Velocidad Loca");
-      if (tiempoClickUltra.length >= 10) desbloquearEmblema("🔥 Dedo Rápido");
-      if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
-
-      // Paciencia Infinita - 30 segundos
-      if (contador === 300 && !esperaPaciencia) {
-        tiempoPaciencia = Date.now();
-        esperaPaciencia = setTimeout(() => {
-          if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
-        }, 30000);
-      } else if (contador !== 300) {
-        clearTimeout(esperaPaciencia);
-        esperaPaciencia = null;
-      }
-
-      // ⭐ MEDALLA DE BRONCE - PRIMERA VEZ QUE LLEGA A 1000
-      if (contador === 1000 && !yaGanoBronce) {
-        yaGanoBronce = true;
-        desbloquearEmblema("🥇 Medalla de Bronce");
+      // Si llegamos a 1000, finalizar el juego
+      if (contador === 1000 && !juegoTerminado) {
+        juegoTerminado = true;
+        juegoActivo = false;
         
-        // Victoria
+        // Medalla de Bronce - primera vez que llega a 1000
+        if (!yaGanoBronce) {
+          yaGanoBronce = true;
+          desbloquearEmblema("🥇 Medalla de Bronce");
+        }
+        
         sonidoFinal.volume = parseFloat(document.getElementById("volumenSFX").value);
         sonidoFinal.play().catch(() => {});
-        musicaFondo.pause();
+        
+        // Si la música 666 se reprodujo, no reanudar fondo
+        if (!musica666Reproducida) {
+          musicaFondo.pause();
+        }
+        
         musicaVictoria.volume = parseFloat(document.getElementById("volumenMusica").value);
         musicaVictoria.currentTime = 0;
         musicaVictoria.play().catch(() => {});
@@ -944,29 +894,45 @@
         if (victorias === 3) desbloquearEmblema("💎 Diamante Triple");
         contadorInfo.style.display = "none";
         
-        // Mostrar el emblema 666 como "???" en la vitrina
-        emblema666Visible = true;
-        actualizarVitrina();
+        // Verificar todos los emblemas
+        const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
+        const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
+        
+        if (todosObtenidos && !creditosYaMostrados) {
+          if (!emblemasObtenidos["🏁 Meta Suprema"]) {
+            emblemasObtenidos["🏁 Meta Suprema"] = true;
+            mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
+            actualizarPanelEmblemas();
+          }
+          creditosYaMostrados = true;
+          iniciarCreditosFinales();
+        }
+        
+        return; // No seguir procesando
       }
 
-      // Verificar todos los emblemas (excluyendo Meta Suprema que se da al final)
-      const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema" && e !== "❓❓❓");
-      const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
-      
-      // También verificar si el 666 ya fue desbloqueado (reemplazado por el nombre real)
-      const tiene666 = emblemasObtenidos["👹 No Confíes En 666"];
-      const todosCon666 = emblemasNormales.every(e => emblemasObtenidos[e]) && tiene666;
-      
-      if (todosCon666 && !creditosYaMostrados) {
-        // Desbloquear Meta Suprema (Platino)
-        if (!emblemasObtenidos["🏁 Meta Suprema"]) {
-          emblemasObtenidos["🏁 Meta Suprema"] = true;
-          mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
-          actualizarPanelEmblemas();
-          actualizarVitrina();
+      // Verificar emblemas (excepto los que ya se verifican en 1000)
+      if (contador < 1000) {
+        const ahora = Date.now();
+        tiempoClickRapido.push(ahora);
+        tiempoClickUltra.push(ahora);
+        tiempoClickRapido = tiempoClickRapido.filter(t => ahora - t < 10000);
+        tiempoClickUltra = tiempoClickUltra.filter(t => ahora - t < 2000);
+
+        if (tiempoClickRapido.length >= 20) desbloquearEmblema("⚡ Velocidad Loca");
+        if (tiempoClickUltra.length >= 10) desbloquearEmblema("🔥 Dedo Rápido");
+        if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
+
+        // Paciencia Infinita - 30 segundos
+        if (contador === 300 && !esperaPaciencia) {
+          tiempoPaciencia = Date.now();
+          esperaPaciencia = setTimeout(() => {
+            if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
+          }, 30000);
+        } else if (contador !== 300) {
+          clearTimeout(esperaPaciencia);
+          esperaPaciencia = null;
         }
-        creditosYaMostrados = true;
-        iniciarCreditosFinales();
       }
     }
 
@@ -979,6 +945,8 @@
       numero.textContent = "0";
       contador = 0;
       juegoActivo = true;
+      juegoTerminado = false;
+      musica666Reproducida = false;
       
       musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
       musicaFondo.currentTime = 0;
@@ -992,7 +960,6 @@
       document.body.addEventListener("click", contar);
       document.body.addEventListener("touchstart", contar);
       actualizarPanelEmblemas();
-      actualizarVitrina();
       contadorInfo.style.display = "block";
     }
 
@@ -1007,8 +974,23 @@
       document.body.classList.remove("victoria", "ritmo", "temblor", "rojo", "blur");
       mensaje.classList.add("oculto");
 
+      // Cancelar temporizador 666 si está activo
+      if (temporizador666Interval) {
+        clearInterval(temporizador666Interval);
+        temporizador666Interval = null;
+      }
+      temporizador666.classList.add("oculto");
+      temporizador666Activo = false;
+      evento666Cancelado = false;
+
+      // Detener todas las músicas
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
+      musica666.pause();
+      musica666.currentTime = 0;
+      musica666Reproducida = false;
+      
+      // Reiniciar música de fondo
       musicaFondo.currentTime = 0;
       musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
       musicaFondo.play().catch(() => {});
@@ -1023,6 +1005,7 @@
       evento666Activado = false;
       musicaInterrumpida = false;
       juegoActivo = true;
+      juegoTerminado = false;
       numero.classList.remove("oculto");
       contadorInfo.style.display = "block";
     }
@@ -1065,13 +1048,13 @@
     //  INICIALIZACIÓN
     // ============================================================
     actualizarPanelEmblemas();
-    actualizarVitrina();
     contadorInfo.style.display = "none";
 
     console.log("🎮 Clicker Raphástico - Contando de 10 en 10");
     console.log("🥇 Medalla de Bronce → Llegar a 1000 por primera vez");
-    console.log("👹 666 → Evento especial en el número 666");
+    console.log("👹 666 → Temporizador de 5 segundos, si saltas se cancela");
     console.log("🏁 Meta Suprema → Completar todos los emblemas");
+    console.log("🎵 Después del evento 666, la música de fondo se detiene hasta reiniciar");
   </script>
 </body>
 </html>
