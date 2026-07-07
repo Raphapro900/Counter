@@ -86,8 +86,8 @@
       padding: 15px 20px;
       border-radius: 15px;
       border: 2px solid rgba(255,215,0,0.3);
-      min-width: 200px;
-      max-height: 300px;
+      min-width: 220px;
+      max-height: 350px;
       overflow-y: auto;
       align-items: flex-start;
     }
@@ -107,6 +107,9 @@
       background: rgba(255,215,0,0.15);
       text-shadow: 0 0 10px rgba(255,215,0,0.3);
     }
+    #emblemasVitrina .emblema-item.oculto {
+      color: #444;
+    }
     #emblemasVitrina .emblema-item .icono {
       font-size: 28px;
       width: 40px;
@@ -122,23 +125,32 @@
 
     #notificacionEmblema {
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 40px;
-      padding: 20px 40px;
-      background: rgba(0,0,0,0.9);
+      bottom: 80px;
+      right: 30px;
+      font-size: 28px;
+      padding: 15px 30px;
+      background: rgba(0,0,0,0.95);
       color: gold;
       border: 3px solid gold;
       border-radius: 15px;
       z-index: 30;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.5s;
+      transform: translateX(100px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
       text-align: center;
+      max-width: 400px;
+      font-family: 'Bebas Neue', sans-serif;
+      box-shadow: 0 0 30px rgba(255,215,0,0.2);
     }
     #notificacionEmblema.mostrar {
       opacity: 1;
+      transform: translateX(0);
+    }
+    #notificacionEmblema .subtexto {
+      font-size: 16px;
+      color: #aaa;
+      margin-top: 5px;
     }
 
     #botonVerEmblemas {
@@ -315,7 +327,6 @@
       display: block;
     }
 
-    /* Estilos para créditos */
     .barras-cine::before,
     .barras-cine::after {
       content: '';
@@ -334,7 +345,6 @@
       100% { transform: translateY(-100%); }
     }
 
-    /* Scrollbar personalizada para la vitrina */
     #emblemasVitrina::-webkit-scrollbar {
       width: 4px;
     }
@@ -375,9 +385,11 @@
     </div>
   </div>
 
-  <div id="notificacionEmblema"></div>
+  <div id="notificacionEmblema">
+    <div id="notificacionTexto">🏆 ¡Emblema desbloqueado!</div>
+    <div class="subtexto" id="notificacionSubtexto"></div>
+  </div>
   
-  <!-- VITRINA DE EMBLEMAS - ESQUINA DERECHA ABAJO -->
   <div id="emblemasVitrina"></div>
   
   <div class="contador-info" id="contadorInfo">Contando de 10 en 10</div>
@@ -399,10 +411,8 @@
   <audio id="click7" src="click7.mp3" preload="auto"></audio>
   <audio id="click8" src="click8.mp3" preload="auto"></audio>
 
-  <!-- Confeti -->
   <canvas id="confetiCanvas"></canvas>
 
-  <!-- Video 666 -->
   <video id="video666" class="oculto">
     <source src="video666.mp4" type="video/mp4" />
   </video>
@@ -423,7 +433,8 @@
     let creditosYaMostrados = false;
     let evento666Activado = false;
     let musicaInterrumpida = false;
-    const totalEmblemas = 7;
+    let yaGanoBronce = false; // Para saber si ya ganó la medalla de bronce
+    let emblema666Visible = false; // Para mostrar "???" en la vitrina
 
     // ============================================================
     //  REFERENCIAS DOM
@@ -436,6 +447,8 @@
     const panelConfig = document.getElementById("panelConfiguracion");
     const vitrina = document.getElementById("emblemasVitrina");
     const notificacion = document.getElementById("notificacionEmblema");
+    const notificacionTexto = document.getElementById("notificacionTexto");
+    const notificacionSubtexto = document.getElementById("notificacionSubtexto");
     const contadorInfo = document.getElementById("contadorInfo");
     const cuentaRegresiva = document.getElementById("cuentaRegresiva");
 
@@ -463,7 +476,7 @@
     const sonidoMisterio = document.getElementById("sonidoMisterio");
 
     // ============================================================
-    //  LISTA DE EMBLEMAS
+    //  LISTA DE EMBLEMAS (ORDEN CORRECTO)
     // ============================================================
     const listaEmblemas = [
       "🥇 Medalla de Bronce",
@@ -472,18 +485,30 @@
       "🎮 Casi Casi Gamer",
       "⚡ Velocidad Loca",
       "🕒 Paciencia Infinita",
-      "🏁 Meta Suprema"
+      "❓❓❓", // 666 - se muestra como oculto hasta desbloquear
+      "🏁 Meta Suprema" // Platino - se desbloquea al completar todos
     ];
+
+    // Nombres reales para cuando se desbloquean
+    const nombresReales = {
+      "❓❓❓": "👹 No Confíes En 666"
+    };
 
     // ============================================================
     //  FUNCIÓN PARA MOSTRAR NOTIFICACIÓN
     // ============================================================
-    function mostrarNotificacion(texto) {
-      notificacion.textContent = texto;
+    function mostrarNotificacion(texto, subtexto = "") {
+      notificacionTexto.textContent = texto;
+      notificacionSubtexto.textContent = subtexto;
       notificacion.classList.add("mostrar");
-      setTimeout(() => {
+      
+      if (window.notificacionTimeout) {
+        clearTimeout(window.notificacionTimeout);
+      }
+      
+      window.notificacionTimeout = setTimeout(() => {
         notificacion.classList.remove("mostrar");
-      }, 3000);
+      }, 4000);
     }
 
     // ============================================================
@@ -527,11 +552,9 @@
           imagenFinal.style.opacity = "1";
         }, 100);
 
+        // Desbloquear emblema 666 (reemplazar "???" por el nombre real)
         setTimeout(() => {
-          if (!listaEmblemas.includes("👹 No Confíes En 666")) {
-            listaEmblemas.push("👹 No Confíes En 666");
-          }
-          desbloquearEmblema("👹 No Confíes En 666");
+          desbloquearEmblema("❓❓❓", "👹 No Confíes En 666");
         }, 3000);
 
         setTimeout(() => {
@@ -550,11 +573,26 @@
     // ============================================================
     //  DESBLOQUEAR EMBLEMA
     // ============================================================
-    function desbloquearEmblema(nombre) {
-      if (emblemasObtenidos[nombre]) return;
-      emblemasObtenidos[nombre] = true;
-
-      mostrarNotificacion(`🏆 ¡${nombre}!`);
+    function desbloquearEmblema(nombre, nombreReal = null) {
+      // Si es el emblema 666, usar el nombre real
+      const nombreFinal = nombreReal || nombre;
+      
+      // Si ya está desbloqueado, no hacer nada
+      if (emblemasObtenidos[nombreFinal]) return;
+      
+      // Si es el emblema "???", reemplazarlo por el nombre real
+      if (nombre === "❓❓❓" && nombreReal) {
+        // Quitar el "???" de la lista y poner el nombre real
+        const index = listaEmblemas.indexOf("❓❓❓");
+        if (index !== -1) {
+          listaEmblemas[index] = nombreReal;
+        }
+        emblemasObtenidos[nombreReal] = true;
+        mostrarNotificacion(`👹 ¡${nombreReal}!`, "El misterio ha sido revelado");
+      } else {
+        emblemasObtenidos[nombreFinal] = true;
+        mostrarNotificacion(`🏆 ¡${nombreFinal}!`, "Nuevo emblema desbloqueado");
+      }
 
       sonidoEmblema.playbackRate = 1;
       sonidoEmblema.currentTime = 0;
@@ -564,28 +602,55 @@
       actualizarPanelEmblemas();
       actualizarVitrina();
 
-      if (Object.keys(emblemasObtenidos).length === listaEmblemas.length && !creditosYaMostrados) {
+      // Verificar si todos los emblemas están completos (excluyendo Meta Suprema)
+      const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
+      const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
+      
+      if (todosObtenidos && !creditosYaMostrados) {
+        // Desbloquear Meta Suprema (Platino)
+        if (!emblemasObtenidos["🏁 Meta Suprema"]) {
+          emblemasObtenidos["🏁 Meta Suprema"] = true;
+          mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
+          actualizarPanelEmblemas();
+          actualizarVitrina();
+        }
         creditosYaMostrados = true;
         iniciarCreditosFinales();
       }
     }
 
     // ============================================================
-    //  ACTUALIZAR VITRINA (ESQUINA DERECHA ABAJO)
+    //  ACTUALIZAR VITRINA
     // ============================================================
     function actualizarVitrina() {
-      vitrina.innerHTML = '<div style="color: gold; font-size: 14px; margin-bottom: 8px; width: 100%; text-align: center; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px;">🏅 EMBLEMAS</div>';
+      const titulo = document.createElement("div");
+      titulo.style.cssText = "color: gold; font-size: 14px; margin-bottom: 8px; width: 100%; text-align: center; border-bottom: 1px solid rgba(255,215,0,0.2); padding-bottom: 5px;";
+      titulo.textContent = "🏅 EMBLEMAS";
+      vitrina.innerHTML = "";
+      vitrina.appendChild(titulo);
       
       listaEmblemas.forEach(nombre => {
         const div = document.createElement("div");
         div.className = "emblema-item";
-        if (emblemasObtenidos[nombre]) {
+        
+        // Verificar si está desbloqueado
+        const desbloqueado = emblemasObtenidos[nombre];
+        if (desbloqueado) {
           div.classList.add("desbloqueado");
+        }
+        
+        // Si es "???" y no está desbloqueado, mostrarlo como oculto
+        if (nombre === "❓❓❓" && !desbloqueado) {
+          div.classList.add("oculto");
         }
         
         const icono = document.createElement("span");
         icono.className = "icono";
-        icono.textContent = emblemasObtenidos[nombre] ? "✨" : "⛔";
+        if (nombre === "❓❓❓" && !desbloqueado) {
+          icono.textContent = "❓";
+        } else {
+          icono.textContent = desbloqueado ? "✨" : "⛔";
+        }
         
         const nombreSpan = document.createElement("span");
         nombreSpan.className = "nombre";
@@ -593,8 +658,13 @@
         
         const estado = document.createElement("span");
         estado.className = "estado";
-        estado.textContent = emblemasObtenidos[nombre] ? "✓" : "✗";
-        estado.style.color = emblemasObtenidos[nombre] ? "#4caf50" : "#666";
+        if (nombre === "❓❓❓" && !desbloqueado) {
+          estado.textContent = "?";
+          estado.style.color = "#666";
+        } else {
+          estado.textContent = desbloqueado ? "✓" : "✗";
+          estado.style.color = desbloqueado ? "#4caf50" : "#666";
+        }
         
         div.appendChild(icono);
         div.appendChild(nombreSpan);
@@ -610,9 +680,14 @@
       const lista = document.getElementById("listaEmblemas");
       lista.innerHTML = "<strong>🏅 Emblemas:</strong><br><br>";
       listaEmblemas.forEach(nombre => {
-        lista.innerHTML += emblemasObtenidos[nombre]
-          ? `✨ ${nombre}<br>`
-          : `⛔ ${nombre}<br>`;
+        const desbloqueado = emblemasObtenidos[nombre];
+        let displayNombre = nombre;
+        if (nombre === "❓❓❓" && !desbloqueado) {
+          displayNombre = "❓❓❓ (Misterio)";
+        }
+        lista.innerHTML += desbloqueado
+          ? `✨ ${displayNombre}<br>`
+          : `⛔ ${displayNombre}<br>`;
       });
     }
 
@@ -650,9 +725,24 @@
     function reiniciarEmblemas() {
       emblemasObtenidos = {};
       creditosYaMostrados = false;
+      yaGanoBronce = false;
+      
+      // Restaurar "???" en la lista si fue reemplazado
+      const index666 = listaEmblemas.indexOf("👹 No Confíes En 666");
+      if (index666 !== -1) {
+        listaEmblemas[index666] = "❓❓❓";
+      }
+      
+      // Asegurar que Meta Suprema esté al final
+      const indexMeta = listaEmblemas.indexOf("🏁 Meta Suprema");
+      if (indexMeta !== -1 && indexMeta < listaEmblemas.length - 1) {
+        listaEmblemas.splice(indexMeta, 1);
+        listaEmblemas.push("🏁 Meta Suprema");
+      }
+      
       actualizarPanelEmblemas();
       actualizarVitrina();
-      mostrarNotificacion("🔄 Emblemas reiniciados");
+      mostrarNotificacion("🔄 Emblemas reiniciados", "Todos los emblemas se han reiniciado");
     }
 
     // ============================================================
@@ -758,18 +848,27 @@
       
       if (e.target.tagName === "BUTTON") return;
 
+      // Efecto visual
       document.body.classList.add("temblor", "rojo", "blur");
       setTimeout(() => {
         document.body.classList.remove("temblor", "rojo", "blur");
       }, 200);
 
-      contador += 10;
+      // ⭐ CONTADOR ESPECIAL: De 660 pasa a 666
+      if (contador === 660) {
+        contador = 666;
+      } else {
+        contador += 10;
+      }
+      
       numero.textContent = contador;
 
+      // Efecto salto
       numero.classList.remove("saltar");
       void numero.offsetWidth;
       numero.classList.add("saltar");
 
+      // Sonido click
       const sonido = sonidosClick[clickActual];
       if (sonido) {
         sonido.currentTime = 0;
@@ -778,8 +877,10 @@
       }
       clickActual = (clickActual + 1) % sonidosClick.length;
 
+      // Mostrar +10 (o +6 si es el salto especial)
+      const incrementoTexto = contador === 666 ? "+6" : "+10";
       const incremento = document.createElement("div");
-      incremento.textContent = "+10";
+      incremento.textContent = incrementoTexto;
       incremento.style.cssText = `
         position: fixed;
         font-size: 40px;
@@ -801,7 +902,7 @@
         return;
       }
 
-      // Verificar emblemas
+      // Verificar emblemas (excepto Medalla de Bronce y Meta Suprema)
       const ahora = Date.now();
       tiempoClickRapido.push(ahora);
       tiempoClickUltra.push(ahora);
@@ -810,23 +911,25 @@
 
       if (tiempoClickRapido.length >= 20) desbloquearEmblema("⚡ Velocidad Loca");
       if (tiempoClickUltra.length >= 10) desbloquearEmblema("🔥 Dedo Rápido");
-      if (contador === 100) desbloquearEmblema("🥇 Medalla de Bronce");
       if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
 
-      // ⭐ PACENCIA INFINITA - AHORA 30 SEGUNDOS (30000 ms)
+      // Paciencia Infinita - 30 segundos
       if (contador === 300 && !esperaPaciencia) {
         tiempoPaciencia = Date.now();
         esperaPaciencia = setTimeout(() => {
           if (contador === 300) desbloquearEmblema("🕒 Paciencia Infinita");
-        }, 30000); // 30 segundos
+        }, 30000);
       } else if (contador !== 300) {
         clearTimeout(esperaPaciencia);
         esperaPaciencia = null;
       }
 
-      // Victoria (1000)
-      if (contador === 1000) {
-        desbloquearEmblema("🏁 Meta Suprema");
+      // ⭐ MEDALLA DE BRONCE - PRIMERA VEZ QUE LLEGA A 1000
+      if (contador === 1000 && !yaGanoBronce) {
+        yaGanoBronce = true;
+        desbloquearEmblema("🥇 Medalla de Bronce");
+        
+        // Victoria
         sonidoFinal.volume = parseFloat(document.getElementById("volumenSFX").value);
         sonidoFinal.play().catch(() => {});
         musicaFondo.pause();
@@ -840,9 +943,28 @@
         victorias++;
         if (victorias === 3) desbloquearEmblema("💎 Diamante Triple");
         contadorInfo.style.display = "none";
+        
+        // Mostrar el emblema 666 como "???" en la vitrina
+        emblema666Visible = true;
+        actualizarVitrina();
       }
 
-      if (Object.keys(emblemasObtenidos).length === listaEmblemas.length && !creditosYaMostrados) {
+      // Verificar todos los emblemas (excluyendo Meta Suprema que se da al final)
+      const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema" && e !== "❓❓❓");
+      const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
+      
+      // También verificar si el 666 ya fue desbloqueado (reemplazado por el nombre real)
+      const tiene666 = emblemasObtenidos["👹 No Confíes En 666"];
+      const todosCon666 = emblemasNormales.every(e => emblemasObtenidos[e]) && tiene666;
+      
+      if (todosCon666 && !creditosYaMostrados) {
+        // Desbloquear Meta Suprema (Platino)
+        if (!emblemasObtenidos["🏁 Meta Suprema"]) {
+          emblemasObtenidos["🏁 Meta Suprema"] = true;
+          mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
+          actualizarPanelEmblemas();
+          actualizarVitrina();
+        }
         creditosYaMostrados = true;
         iniciarCreditosFinales();
       }
@@ -947,10 +1069,9 @@
     contadorInfo.style.display = "none";
 
     console.log("🎮 Clicker Raphástico - Contando de 10 en 10");
-    console.log("💡 Objetivo: Llegar a 1000 clics");
-    console.log("🏆 Desbloquea los 7 emblemas");
-    console.log("👹 EVENTO 666: ¡Cuando llegues a 666 activarás el evento especial!");
-    console.log("⏱️ Paciencia Infinita: Espera 30 segundos en el número 300");
+    console.log("🥇 Medalla de Bronce → Llegar a 1000 por primera vez");
+    console.log("👹 666 → Evento especial en el número 666");
+    console.log("🏁 Meta Suprema → Completar todos los emblemas");
   </script>
 </body>
 </html>
