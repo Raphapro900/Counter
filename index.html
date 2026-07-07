@@ -420,6 +420,7 @@
     let juegoTerminado = false;
     let musica666Reproducida = false;
     let paso666Completado = false;
+    let salto666Pendiente = false; // Para saber si estamos en 666 y falta el +4
 
     // ============================================================
     //  REFERENCIAS DOM
@@ -489,7 +490,6 @@
           creditos: creditosYaMostrados,
           bronce: yaGanoBronce,
           paso666: paso666Completado,
-          // Guardar qué emblemas están en la lista (para saber si 666 ya fue reemplazado)
           lista: listaEmblemas
         };
         document.cookie = "raphastic_emblems=" + encodeURIComponent(JSON.stringify(data)) + "; path=/; max-age=31536000";
@@ -508,16 +508,13 @@
           yaGanoBronce = data.bronce || false;
           paso666Completado = data.paso666 || false;
           
-          // Restaurar lista de emblemas si es necesario
           if (data.lista) {
-            // Si el 666 ya fue desbloqueado, actualizar la lista
             if (emblemasObtenidos[nombreReal666]) {
               const index = data.lista.indexOf("???");
               if (index !== -1) {
                 data.lista[index] = nombreReal666;
               }
             }
-            // Actualizar la lista global
             for (let i = 0; i < data.lista.length && i < listaEmblemas.length; i++) {
               listaEmblemas[i] = data.lista[i];
             }
@@ -538,13 +535,11 @@
       yaGanoBronce = false;
       paso666Completado = false;
       
-      // Restaurar "???" en la lista si fue reemplazado
       const index666 = listaEmblemas.indexOf(nombreReal666);
       if (index666 !== -1) {
         listaEmblemas[index666] = "???";
       }
       
-      // Borrar cookie
       document.cookie = "raphastic_emblems=; path=/; max-age=0";
       
       actualizarPanelEmblemas();
@@ -576,20 +571,18 @@
       
       temporizador666Activo = true;
       evento666Cancelado = false;
+      salto666Pendiente = true;
       tiempoRestante666 = 5;
       temporizador666.classList.remove("oculto");
       temporizador666.textContent = `⏱ ${tiempoRestante666}`;
       
-      // Pausar música de fondo
       musicaFondo.pause();
       
-      // Reproducir música 666 (sin loop)
       musica666.volume = parseFloat(document.getElementById("volumenMusica").value);
       musica666.currentTime = 0;
       musica666.play().catch(() => {});
       musica666Reproducida = true;
       
-      // Sonido de alerta
       const sonido = sonidosClick[0];
       if (sonido) {
         sonido.currentTime = 0;
@@ -601,7 +594,6 @@
         tiempoRestante666--;
         temporizador666.textContent = `⏱ ${tiempoRestante666}`;
         
-        // Sonido cada segundo
         const sonidoTick = sonidosClick[clickActual % sonidosClick.length];
         if (sonidoTick) {
           sonidoTick.currentTime = 0;
@@ -615,7 +607,6 @@
           temporizador666.classList.add("oculto");
           temporizador666Activo = false;
           
-          // Si no fue cancelado, activar el evento 666
           if (!evento666Cancelado) {
             activarEvento666();
           }
@@ -632,20 +623,24 @@
       temporizador666Activo = false;
       evento666Cancelado = true;
       
-      // Quitar temblor 666
       document.body.classList.remove("temblor666");
       
-      // Detener música 666
       musica666.pause();
       musica666.currentTime = 0;
       musica666Reproducida = false;
       
-      // Reanudar música de fondo
       musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch(() => {});
       
-      mostrarNotificacion("⚠️ Has saltado el 666", "El evento ha sido cancelado");
+      // ⭐ DESPUÉS DE CANCELAR 666 → +4 para llegar a 670
+      salto666Pendiente = false;
+      paso666Completado = true;
+      contador = 670;
+      numero.textContent = contador;
+      guardarEmblemas();
+      
+      mostrarNotificacion("⚠️ Has saltado el 666", "+4 → 670");
     }
 
     // ============================================================
@@ -655,8 +650,8 @@
       if (evento666Activado) return;
       evento666Activado = true;
       
-      // Quitar temblor 666
       document.body.classList.remove("temblor666");
+      salto666Pendiente = false;
       
       const video = document.getElementById("video666");
       video.classList.remove("oculto");
@@ -668,7 +663,6 @@
         video.style.display = "none";
         document.body.style.backgroundColor = "black";
 
-        // Detener música 666
         musica666.pause();
         musica666.currentTime = 0;
         musica666Reproducida = false;
@@ -703,19 +697,20 @@
 
         setTimeout(() => {
           imagenFinal.remove();
-          // NO REANUDAR música de fondo después del evento 666
           evento666Activado = false;
           paso666Completado = true;
-          guardarEmblemas(); // Guardar progreso
+          // ⭐ DESPUÉS DEL VIDEO 666 → +4 para llegar a 670
+          contador = 670;
+          numero.textContent = contador;
+          guardarEmblemas();
         }, 8000);
       };
     }
 
     // ============================================================
-    //  DESBLOQUEAR EMBLEMA 666 (reemplaza "???" por nombre real)
+    //  DESBLOQUEAR EMBLEMA 666
     // ============================================================
     function desbloquearEmblema666() {
-      // Reemplazar "???" por el nombre real en la lista
       const index = listaEmblemas.indexOf("???");
       if (index !== -1) {
         listaEmblemas[index] = nombreReal666;
@@ -732,9 +727,8 @@
       sonidoEmblema.play().catch(() => {});
 
       actualizarPanelEmblemas();
-      guardarEmblemas(); // Guardar progreso
+      guardarEmblemas();
 
-      // Verificar si todos los emblemas están completos (excluyendo Meta Suprema)
       const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
       const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
       
@@ -743,7 +737,7 @@
           emblemasObtenidos["🏁 Meta Suprema"] = true;
           mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
           actualizarPanelEmblemas();
-          guardarEmblemas(); // Guardar progreso
+          guardarEmblemas();
         }
         creditosYaMostrados = true;
         iniciarCreditosFinales();
@@ -765,9 +759,8 @@
       sonidoEmblema.play().catch(() => {});
 
       actualizarPanelEmblemas();
-      guardarEmblemas(); // Guardar progreso
+      guardarEmblemas();
 
-      // Verificar si todos los emblemas están completos (excluyendo Meta Suprema)
       const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
       const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
       
@@ -776,7 +769,7 @@
           emblemasObtenidos["🏁 Meta Suprema"] = true;
           mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
           actualizarPanelEmblemas();
-          guardarEmblemas(); // Guardar progreso
+          guardarEmblemas();
         }
         creditosYaMostrados = true;
         iniciarCreditosFinales();
@@ -815,9 +808,6 @@
       }
     }
 
-    // ============================================================
-    //  MOSTRAR/OCULTAR CONFIGURACIÓN
-    // ============================================================
     function mostrarOcultarConfiguracion() {
       const display = panelEmblemas.style.display;
       if (display === "block") {
@@ -875,7 +865,7 @@
     }
 
     // ============================================================
-    //  CRÉDITOS FINALES
+    //  CRÉDITOS FINALES - CON AÑO DINÁMICO
     // ============================================================
     function iniciarCreditosFinales() {
       if (document.getElementById("creditosActivos")) return;
@@ -907,7 +897,10 @@
         padding: 20px;
         line-height: 1.6;
       `;
-      const año = new Date().getFullYear();
+      
+      // ⭐ AÑO DINÁMICO - se obtiene automáticamente de la fecha del usuario
+      const añoActual = new Date().getFullYear();
+      
       creditos.innerHTML = `
         🎬 <br><br>
         <strong>Creador:</strong> Raphapro900<br>
@@ -919,7 +912,7 @@
           como un juego parecido a My Name Is Mayo<br>
           con emblemas y eso :)"<br><br>
         </em>
-        <strong>Inició el proyecto en 2025 y sigue actualizándose este ${año}</strong><br><br>
+        <strong>Inició el proyecto en 2025 y sigue actualizándose este ${añoActual}</strong><br><br>
         ¡Gracias por jugar! 🎮<br><br>
         <span style="font-size: 18px; color: #888;">
           CCO Raphapro900 - Counter v1.0
@@ -940,7 +933,6 @@
     //  FUNCIÓN CONTAR (PRINCIPAL)
     // ============================================================
     function contar(e) {
-      // Si el juego terminó o ya se llegó a 1000, no hacer nada
       if (!juegoActivo || evento666Activado || juegoTerminado) return;
       
       if (e.target.tagName === "BUTTON") return;
@@ -948,24 +940,20 @@
       // Si el temporizador 666 está activo y se hace clic, cancelar
       if (temporizador666Activo) {
         cancelarTemporizador666();
-        // Continuar con el conteo normal
+        // Después de cancelar, el contador ya está en 670, así que salimos
+        return;
       }
 
-      // Efecto visual
-      document.body.classList.add("temblor", "rojo", "blur");
-      setTimeout(() => {
-        document.body.classList.remove("temblor", "rojo", "blur");
-      }, 200);
-
-      // ⭐ CONTADOR ESPECIAL:
-      // - De 660 pasa a 666
-      // - Después de 666, suma 4 para llegar a 670
-      if (contador === 660) {
-        contador = 666;
-      } else if (contador === 666 && paso666Completado) {
-        contador = 670;
-      } else {
+      // Si ya pasamos el 666 (paso666Completado = true), contar normal
+      if (paso666Completado) {
         contador += 10;
+      } else {
+        // ⭐ CONTADOR ESPECIAL: De 660 pasa a 666
+        if (contador === 660) {
+          contador = 666;
+        } else {
+          contador += 10;
+        }
       }
       
       // Si pasamos de 1000, lo limitamos a 1000
@@ -974,6 +962,12 @@
       }
       
       numero.textContent = contador;
+
+      // Efecto visual
+      document.body.classList.add("temblor", "rojo", "blur");
+      setTimeout(() => {
+        document.body.classList.remove("temblor", "rojo", "blur");
+      }, 200);
 
       // Efecto salto
       numero.classList.remove("saltar");
@@ -993,8 +987,6 @@
       let incrementoTexto = "+10";
       if (contador === 666) {
         incrementoTexto = "+6";
-      } else if (contador === 670 && paso666Completado) {
-        incrementoTexto = "+4";
       }
       const incremento = document.createElement("div");
       incremento.textContent = incrementoTexto;
@@ -1020,7 +1012,7 @@
       // ⭐ INICIAR TEMPORIZADOR 666 (si llegamos a 666)
       if (contador === 666 && !evento666Activado && !temporizador666Activo) {
         iniciarTemporizador666();
-        return; // No procesar más este clic
+        return;
       }
 
       // Si llegamos a 1000, finalizar el juego
@@ -1028,7 +1020,6 @@
         juegoTerminado = true;
         juegoActivo = false;
         
-        // Medalla de Bronce - primera vez que llega a 1000
         if (!yaGanoBronce) {
           yaGanoBronce = true;
           desbloquearEmblema("🥇 Medalla de Bronce");
@@ -1037,7 +1028,6 @@
         sonidoFinal.volume = parseFloat(document.getElementById("volumenSFX").value);
         sonidoFinal.play().catch(() => {});
         
-        // Si la música 666 se reprodujo, no reanudar fondo
         if (!musica666Reproducida) {
           musicaFondo.pause();
         }
@@ -1053,7 +1043,6 @@
         if (victorias === 3) desbloquearEmblema("💎 Diamante Triple");
         contadorInfo.style.display = "none";
         
-        // Verificar todos los emblemas
         const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
         const todosObtenidos = emblemasNormales.every(e => emblemasObtenidos[e]);
         
@@ -1068,11 +1057,11 @@
           iniciarCreditosFinales();
         }
         
-        guardarEmblemas(); // Guardar progreso final
-        return; // No seguir procesando
+        guardarEmblemas();
+        return;
       }
 
-      // Verificar emblemas (excepto los que ya se verifican en 1000)
+      // Verificar emblemas
       if (contador < 1000 && contador !== 666) {
         const ahora = Date.now();
         tiempoClickRapido.push(ahora);
@@ -1084,7 +1073,6 @@
         if (tiempoClickUltra.length >= 10) desbloquearEmblema("🔥 Dedo Rápido");
         if (contador === 990) desbloquearEmblema("🎮 Casi Casi Gamer");
 
-        // Paciencia Infinita - 30 segundos
         if (contador === 300 && !esperaPaciencia) {
           tiempoPaciencia = Date.now();
           esperaPaciencia = setTimeout(() => {
@@ -1108,9 +1096,10 @@
       juegoActivo = true;
       juegoTerminado = false;
       musica666Reproducida = false;
+      paso666Completado = false;
+      salto666Pendiente = false;
       document.body.classList.remove("temblor666");
       
-      // Cargar emblemas guardados
       cargarEmblemas();
       actualizarPanelEmblemas();
       
@@ -1141,7 +1130,6 @@
       document.body.classList.remove("victoria", "ritmo", "temblor", "rojo", "blur", "temblor666");
       mensaje.classList.add("oculto");
 
-      // Cancelar temporizador 666 si está activo
       if (temporizador666Interval) {
         clearInterval(temporizador666Interval);
         temporizador666Interval = null;
@@ -1149,15 +1137,15 @@
       temporizador666.classList.add("oculto");
       temporizador666Activo = false;
       evento666Cancelado = false;
+      salto666Pendiente = false;
+      paso666Completado = false;
 
-      // Detener todas las músicas
       musicaVictoria.pause();
       musicaVictoria.currentTime = 0;
       musica666.pause();
       musica666.currentTime = 0;
       musica666Reproducida = false;
       
-      // Reiniciar música de fondo
       musicaFondo.currentTime = 0;
       musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
       musicaFondo.play().catch(() => {});
@@ -1175,8 +1163,6 @@
       juegoTerminado = false;
       numero.classList.remove("oculto");
       contadorInfo.style.display = "block";
-      
-      // Los emblemas se mantienen gracias a las cookies
     }
 
     // ============================================================
@@ -1198,7 +1184,7 @@
     });
 
     // ============================================================
-    //  EVENT LISTENERS DE BOTONES
+    //  EVENT LISTENERS
     // ============================================================
     btnEmpezar.addEventListener("click", iniciarJuego);
     btnReiniciar.addEventListener("click", reiniciar);
@@ -1216,18 +1202,14 @@
     // ============================================================
     //  INICIALIZACIÓN
     // ============================================================
-    // Intentar cargar emblemas guardados
-    const emblemasCargados = cargarEmblemas();
-    if (emblemasCargados) {
-      console.log("📦 Emblemas restaurados desde cookies");
-    }
+    cargarEmblemas();
     actualizarPanelEmblemas();
     contadorInfo.style.display = "none";
 
     console.log("🎮 Clicker Raphástico - Contando de 10 en 10");
     console.log("🥇 Medalla de Bronce → Llegar a 1000 por primera vez");
     console.log("👹 666 → Temporizador de 5 segundos + temblor intenso");
-    console.log("📊 Después de 666 → +4 = 670");
+    console.log("📊 Después de 666 → +4 = 670 (también si saltas)");
     console.log("🏁 Meta Suprema → Completar todos los emblemas");
     console.log("💾 Los emblemas se guardan automáticamente en cookies");
   </script>
