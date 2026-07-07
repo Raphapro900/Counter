@@ -419,6 +419,7 @@
     let evento666Cancelado = false;
     let juegoTerminado = false;
     let musica666Reproducida = false;
+    let paso666Completado = false;
 
     // ============================================================
     //  REFERENCIAS DOM
@@ -477,6 +478,78 @@
     ];
 
     const nombreReal666 = "👹 No Confíes En 666";
+
+    // ============================================================
+    //  COOKIES - GUARDAR Y CARGAR EMBLEMAS
+    // ============================================================
+    function guardarEmblemas() {
+      try {
+        const data = {
+          emblemas: emblemasObtenidos,
+          creditos: creditosYaMostrados,
+          bronce: yaGanoBronce,
+          paso666: paso666Completado,
+          // Guardar qué emblemas están en la lista (para saber si 666 ya fue reemplazado)
+          lista: listaEmblemas
+        };
+        document.cookie = "raphastic_emblems=" + encodeURIComponent(JSON.stringify(data)) + "; path=/; max-age=31536000";
+      } catch (e) {
+        console.log("Error guardando cookies:", e);
+      }
+    }
+
+    function cargarEmblemas() {
+      try {
+        const match = document.cookie.match(/(?:^|;) ?raphastic_emblems=([^;]*)(?:;|$)/);
+        if (match) {
+          const data = JSON.parse(decodeURIComponent(match[1]));
+          emblemasObtenidos = data.emblemas || {};
+          creditosYaMostrados = data.creditos || false;
+          yaGanoBronce = data.bronce || false;
+          paso666Completado = data.paso666 || false;
+          
+          // Restaurar lista de emblemas si es necesario
+          if (data.lista) {
+            // Si el 666 ya fue desbloqueado, actualizar la lista
+            if (emblemasObtenidos[nombreReal666]) {
+              const index = data.lista.indexOf("???");
+              if (index !== -1) {
+                data.lista[index] = nombreReal666;
+              }
+            }
+            // Actualizar la lista global
+            for (let i = 0; i < data.lista.length && i < listaEmblemas.length; i++) {
+              listaEmblemas[i] = data.lista[i];
+            }
+          }
+          
+          console.log("📦 Emblemas cargados desde cookies:", emblemasObtenidos);
+          return true;
+        }
+      } catch (e) {
+        console.log("Error cargando cookies:", e);
+      }
+      return false;
+    }
+
+    function reiniciarEmblemas() {
+      emblemasObtenidos = {};
+      creditosYaMostrados = false;
+      yaGanoBronce = false;
+      paso666Completado = false;
+      
+      // Restaurar "???" en la lista si fue reemplazado
+      const index666 = listaEmblemas.indexOf(nombreReal666);
+      if (index666 !== -1) {
+        listaEmblemas[index666] = "???";
+      }
+      
+      // Borrar cookie
+      document.cookie = "raphastic_emblems=; path=/; max-age=0";
+      
+      actualizarPanelEmblemas();
+      mostrarNotificacion("🔄 Emblemas reiniciados", "Todos los emblemas se han reiniciado");
+    }
 
     // ============================================================
     //  FUNCIÓN PARA MOSTRAR NOTIFICACIÓN
@@ -632,6 +705,8 @@
           imagenFinal.remove();
           // NO REANUDAR música de fondo después del evento 666
           evento666Activado = false;
+          paso666Completado = true;
+          guardarEmblemas(); // Guardar progreso
         }, 8000);
       };
     }
@@ -657,6 +732,7 @@
       sonidoEmblema.play().catch(() => {});
 
       actualizarPanelEmblemas();
+      guardarEmblemas(); // Guardar progreso
 
       // Verificar si todos los emblemas están completos (excluyendo Meta Suprema)
       const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
@@ -667,6 +743,7 @@
           emblemasObtenidos["🏁 Meta Suprema"] = true;
           mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
           actualizarPanelEmblemas();
+          guardarEmblemas(); // Guardar progreso
         }
         creditosYaMostrados = true;
         iniciarCreditosFinales();
@@ -688,6 +765,7 @@
       sonidoEmblema.play().catch(() => {});
 
       actualizarPanelEmblemas();
+      guardarEmblemas(); // Guardar progreso
 
       // Verificar si todos los emblemas están completos (excluyendo Meta Suprema)
       const emblemasNormales = listaEmblemas.filter(e => e !== "🏁 Meta Suprema");
@@ -698,6 +776,7 @@
           emblemasObtenidos["🏁 Meta Suprema"] = true;
           mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
           actualizarPanelEmblemas();
+          guardarEmblemas(); // Guardar progreso
         }
         creditosYaMostrados = true;
         iniciarCreditosFinales();
@@ -748,24 +827,6 @@
         panelConfig.classList.remove("oculto");
         actualizarPanelEmblemas();
       }
-    }
-
-    // ============================================================
-    //  REINICIAR EMBLEMAS
-    // ============================================================
-    function reiniciarEmblemas() {
-      emblemasObtenidos = {};
-      creditosYaMostrados = false;
-      yaGanoBronce = false;
-      
-      // Restaurar "???" en la lista si fue reemplazado
-      const index666 = listaEmblemas.indexOf(nombreReal666);
-      if (index666 !== -1) {
-        listaEmblemas[index666] = "???";
-      }
-      
-      actualizarPanelEmblemas();
-      mostrarNotificacion("🔄 Emblemas reiniciados", "Todos los emblemas se han reiniciado");
     }
 
     // ============================================================
@@ -896,9 +957,13 @@
         document.body.classList.remove("temblor", "rojo", "blur");
       }, 200);
 
-      // Contador: de 660 pasa a 666
+      // ⭐ CONTADOR ESPECIAL:
+      // - De 660 pasa a 666
+      // - Después de 666, suma 4 para llegar a 670
       if (contador === 660) {
         contador = 666;
+      } else if (contador === 666 && paso666Completado) {
+        contador = 670;
       } else {
         contador += 10;
       }
@@ -928,6 +993,8 @@
       let incrementoTexto = "+10";
       if (contador === 666) {
         incrementoTexto = "+6";
+      } else if (contador === 670 && paso666Completado) {
+        incrementoTexto = "+4";
       }
       const incremento = document.createElement("div");
       incremento.textContent = incrementoTexto;
@@ -995,11 +1062,13 @@
             emblemasObtenidos["🏁 Meta Suprema"] = true;
             mostrarNotificacion("🏁 ¡Meta Suprema!", "¡Has completado todos los emblemas!");
             actualizarPanelEmblemas();
+            guardarEmblemas();
           }
           creditosYaMostrados = true;
           iniciarCreditosFinales();
         }
         
+        guardarEmblemas(); // Guardar progreso final
         return; // No seguir procesando
       }
 
@@ -1041,6 +1110,10 @@
       musica666Reproducida = false;
       document.body.classList.remove("temblor666");
       
+      // Cargar emblemas guardados
+      cargarEmblemas();
+      actualizarPanelEmblemas();
+      
       musicaFondo.volume = parseFloat(document.getElementById("volumenMusica").value);
       musicaFondo.currentTime = 0;
       musicaFondo.play().catch((err) => {
@@ -1052,8 +1125,9 @@
       
       document.body.addEventListener("click", contar);
       document.body.addEventListener("touchstart", contar);
-      actualizarPanelEmblemas();
       contadorInfo.style.display = "block";
+      
+      console.log("📦 Emblemas cargados:", emblemasObtenidos);
     }
 
     // ============================================================
@@ -1101,6 +1175,8 @@
       juegoTerminado = false;
       numero.classList.remove("oculto");
       contadorInfo.style.display = "block";
+      
+      // Los emblemas se mantienen gracias a las cookies
     }
 
     // ============================================================
@@ -1140,13 +1216,20 @@
     // ============================================================
     //  INICIALIZACIÓN
     // ============================================================
+    // Intentar cargar emblemas guardados
+    const emblemasCargados = cargarEmblemas();
+    if (emblemasCargados) {
+      console.log("📦 Emblemas restaurados desde cookies");
+    }
     actualizarPanelEmblemas();
     contadorInfo.style.display = "none";
 
     console.log("🎮 Clicker Raphástico - Contando de 10 en 10");
     console.log("🥇 Medalla de Bronce → Llegar a 1000 por primera vez");
     console.log("👹 666 → Temporizador de 5 segundos + temblor intenso");
+    console.log("📊 Después de 666 → +4 = 670");
     console.log("🏁 Meta Suprema → Completar todos los emblemas");
+    console.log("💾 Los emblemas se guardan automáticamente en cookies");
   </script>
 </body>
 </html>
